@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   Truck,
 } from "lucide-react";
+import Image from "next/image";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 import { formatPrice } from "@/lib/utils";
