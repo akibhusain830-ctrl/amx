@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+  --primary: #C6FF00;
+  --surface: #0B0B0B;
+  --accent-pink: #FF007A;
+  --accent-cyan: #00F0FF;
+  --accent-mint: #36F4A4;
+  --text-muted: #A0A0A0;
+}
+
+@layer base {
+  body {
+    @apply bg-black text-white font-sans antialiased;
+    background-color: var(--background);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-outfit tracking-tight;
+  }
+}
+
+@layer utilities {
+  .neon-bloom-lime {
+    filter: drop-shadow(0 0 8px rgba(198, 255, 0, 0.4)) drop-shadow(0 0 20px rgba(198, 255, 0, 0.2));
+  }
+  
+  .neon-bloom-pink {
+    filter: drop-shadow(0 0 8px rgba(255, 0, 122, 0.4)) drop-shadow(0 0 20px rgba(255, 0, 122, 0.2));
+  }
+
+  .neon-bloom-cyan {
+    filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.4)) drop-shadow(0 0 20px rgba(0, 240, 255, 0.2));
+  }
+
+  .text-glow {
+    text-shadow: 0 0 10px currentColor;
+  }
+
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10;
+  }
+
+  @keyframes scroll {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-scroll {
+    animation: scroll 30s linear infinite;
+  }
+}
