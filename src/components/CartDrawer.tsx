@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import Image from "next/image";
 import { useCartStore } from "@/store/cartStore";
 import { formatPrice } from "@/lib/utils";
 import Link from "next/link";
@@ -95,7 +96,9 @@ const CartDrawer = () => {
                   >
                     <div className="w-20 h-20 bg-surface rounded-xl border border-white/5 flex items-center justify-center shrink-0 overflow-hidden">
                       {product.image_url ? (
-                        <img src={product.image_url} alt={product.title} className="w-full h-full object-cover" />
+                        <div className="relative w-full h-full">
+                          <Image src={product.image_url} alt={product.title} fill className="object-cover" sizes="80px" />
+                        </div>
                       ) : (
                         <span className="text-xs font-mono text-text-muted/40 uppercase">
                           IMG

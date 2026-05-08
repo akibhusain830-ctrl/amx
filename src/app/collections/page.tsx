@@ -83,18 +83,21 @@ export default function CollectionsPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-            {/* Category Filter */}
-            <div className="flex items-center gap-2 bg-surface border border-white/10 rounded-full px-4 py-2">
-              <Filter className="w-3.5 h-3.5 text-primary" />
-              <select 
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="bg-transparent text-xs font-black uppercase tracking-widest outline-none cursor-pointer"
-              >
-                {categories.map(cat => (
-                  <option key={cat} value={cat} className="bg-surface">{cat}</option>
-                ))}
-              </select>
+            {/* Category Tabs (Replaces Dropdown) */}
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 sm:pb-0 sm:max-w-md md:max-w-lg lg:max-w-xl flex-1 items-center">
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`shrink-0 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors ${
+                    selectedCategory === cat 
+                      ? 'bg-primary text-black' 
+                      : 'bg-surface border border-white/10 text-white hover:border-primary/50'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
             </div>
 
             {/* Sort By */}
@@ -120,7 +123,7 @@ export default function CollectionsPage() {
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-12">
             {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

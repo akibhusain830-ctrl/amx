@@ -1,4 +1,5 @@
 import Header from "@/components/Header";
+import Image from "next/image";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import Hero from "@/components/Hero";
 import TrustBar from "@/components/TrustBar";
@@ -56,26 +57,37 @@ export default async function Home() {
           <h2 id="category-heading" className="sr-only">Shop by Category</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {[
-              { title: "Shop All", count: `${totalCount} Designs`, color: "from-primary/20", href: "/collections" },
-              { title: "Customise", count: "Your Design", color: "from-accent-mint/20", href: "/customizer" },
-              { title: "Wings", count: `${categoryMap["Wings"] || 0} Designs`, color: "from-accent-pink/20", href: "/collections/wings" },
-              { title: "Cars", count: `${categoryMap["Cars"] || 0} Designs`, color: "from-accent-cyan/20", href: "/collections/cars" },
-              { title: "F1", count: `${categoryMap["F1"] || 0} Designs`, color: "from-primary/20", href: "/collections/f1" },
+              { title: "Shop All", count: `${totalCount} Designs`, image: products[0]?.image_url, href: "/collections" },
+              { title: "Customise", count: "Your Design", image: undefined, href: "/customizer" },
+              { title: "Wings", count: `${categoryMap["Wings"] || 0} Designs`, image: products.find(p => p.category === "Wings")?.image_url, href: "/collections/wings" },
+              { title: "Cars", count: `${categoryMap["Cars"] || 0} Designs`, image: products.find(p => p.category === "Cars")?.image_url, href: "/collections/cars" },
+              { title: "F1", count: `${categoryMap["F1"] || 0} Designs`, image: products.find(p => p.category === "F1")?.image_url, href: "/collections/f1" },
             ].map((cat, i) => (
               <Link
                 key={i}
                 href={cat.href}
-                className="relative h-52 md:h-64 rounded-3xl overflow-hidden bg-surface border border-white/5 p-6 flex flex-col justify-end group"
+                className="group flex flex-col gap-3"
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${cat.color} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700`} />
-                <div className="relative z-10">
-                  <span className="text-[10px] font-mono text-primary tracking-[0.3em] uppercase mb-2 block">{cat.count}</span>
-                  <h3 className="text-2xl sm:text-4xl font-black uppercase tracking-tighter mb-4">{cat.title}</h3>
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all">
-                    Explore Collection <ArrowRight className="w-4 h-4" />
+                <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-surface border border-white/5 transition-transform duration-500 group-hover:border-primary/30 flex items-center justify-center">
+                  {cat.image ? (
+                    <Image src={cat.image} alt={cat.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 50vw, 20vw" />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e] to-[#0f0f1a] flex items-center justify-center">
+                      <div className="absolute inset-0 opacity-20" style={{backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(198,255,0,0.08) 0%, transparent 70%)'}} />
+                      <span className="text-xl font-black uppercase tracking-widest text-primary drop-shadow-[0_0_12px_rgba(198,255,0,0.8)] relative z-10">{cat.title}</span>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500" />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-black uppercase tracking-tight">{cat.title}</h3>
+                  </div>
+                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:shadow-[0_0_12px_rgba(198,255,0,0.5)] transition-all">
+                    <ArrowRight className="w-3.5 h-3.5 text-black" />
                   </div>
                 </div>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-white/5 rounded-full blur-2xl group-hover:bg-primary/20 transition-colors" />
               </Link>
             ))}
           </div>

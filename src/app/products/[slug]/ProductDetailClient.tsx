@@ -496,7 +496,7 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
 
       {/* Sticky Mobile Add to Cart */}
       {product.in_stock && (
-        <div className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-md border-t border-white/10 p-4 lg:hidden z-50">
+        <div className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-md border-t border-white/10 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] lg:hidden z-50">
           <div className="flex items-center gap-4">
             <div className="flex-1">
               <p className="text-lg font-mono font-black text-primary">{formatPrice(finalPrice)}</p>

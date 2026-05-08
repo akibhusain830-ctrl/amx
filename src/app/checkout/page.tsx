@@ -257,7 +257,7 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Mobile sticky bottom bar */}
-                <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface/95 backdrop-blur-md border-t border-white/10 p-4 z-40">
+                <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface/95 backdrop-blur-md border-t border-white/10 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] z-40">
                   <div className="container mx-auto max-w-4xl flex items-center justify-between gap-4">
                     <div>
                       <p className="text-[10px] font-mono uppercase tracking-widest text-text-muted">Total</p>

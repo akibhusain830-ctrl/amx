@@ -23,6 +23,12 @@ const config: Config = {
         outfit: ["var(--font-outfit)", "sans-serif"],
         mono: ["var(--font-mono)", "monospace"],
       },
+      height: {
+        screen: "100dvh",
+      },
+      minHeight: {
+        screen: "100dvh",
+      },
     },
   },
   plugins: [],

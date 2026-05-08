@@ -182,9 +182,9 @@ export default function ProfilePage() {
                         <div className="space-y-3">
                           {order.order_items.map((item: any, i: number) => (
                             <div key={i} className="flex items-center gap-3">
-                              <div className="w-12 h-12 bg-black rounded-lg border border-white/5 overflow-hidden flex-shrink-0">
+                              <div className="w-12 h-12 bg-black rounded-lg border border-white/5 overflow-hidden flex-shrink-0 relative">
                                 {item.products?.image_url ? (
-                                  <img src={item.products.image_url} alt="" className="w-full h-full object-cover" />
+                                  <Image src={item.products.image_url} alt="" fill className="object-cover" sizes="48px" />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center text-[8px] font-mono text-white/20">NEON</div>
                                 )}
