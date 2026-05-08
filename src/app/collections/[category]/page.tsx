@@ -14,10 +14,16 @@ export const revalidate = 60; // Revalidate every minute
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const categories = await getAllCategories();
-  return categories.map((category) => ({
-    category: category.toLowerCase(),
-  }));
+  try {
+    const categories = await getAllCategories();
+    return categories.map((category) => ({
+      category: category.toLowerCase(),
+    }));
+  } catch {
+    // Supabase env vars not available at build time (e.g. Vercel CI).
+    // Pages will be rendered dynamically at request time instead.
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: CategoryPageProps) {

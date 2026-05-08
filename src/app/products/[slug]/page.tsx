@@ -10,8 +10,13 @@ export const revalidate = 60;
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const products = await getProducts();
-  return products.map(p => ({ slug: p.slug }));
+  try {
+    const products = await getProducts();
+    return products.map(p => ({ slug: p.slug }));
+  } catch {
+    // Supabase env vars not available at build time (e.g. Vercel CI).
+    return [];
+  }
 }
 
 
