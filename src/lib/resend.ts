@@ -1,12 +1,12 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function sendOrderConfirmation(email: string, name: string, orderId: string, total: number) {
   if (!process.env.RESEND_API_KEY) {
     console.warn('RESEND_API_KEY not found. Skipping email.');
     return;
   }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
   try {
     await resend.emails.send({
@@ -32,6 +32,8 @@ export async function sendQuoteConfirmation(email: string, name: string, text: s
     console.warn('RESEND_API_KEY not found. Skipping email.');
     return;
   }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
   try {
     await resend.emails.send({

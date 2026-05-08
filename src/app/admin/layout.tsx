@@ -30,7 +30,7 @@ export default async function AdminLayout({
   }
 
   // Role Check
-  const { data: profile, error } = await supabase
+  const { data: profile } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
