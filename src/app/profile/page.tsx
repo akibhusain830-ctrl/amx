@@ -108,7 +108,7 @@ export default function ProfilePage() {
             </button>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Sidebar Controls */}
             <div className="space-y-4">
               <div className="bg-surface border border-white/5 rounded-2xl overflow-hidden p-3">

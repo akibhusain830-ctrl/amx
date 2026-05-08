@@ -31,7 +31,7 @@ export default async function Home() {
       {/* USP Grid */}
       <section className="py-24 border-b border-white/5">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 min-[360px]:grid-cols-2 md:grid-cols-4 gap-6">
             {[
               { icon: Zap, title: "Handmade", desc: "Premium handcrafted LED neon" },
               { icon: Truck, title: "Free Shipping", desc: "On all orders, PAN-India" },
@@ -70,7 +70,7 @@ export default async function Home() {
                 <div className={`absolute inset-0 bg-gradient-to-br ${cat.color} to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700`} />
                 <div className="relative z-10">
                   <span className="text-[10px] font-mono text-primary tracking-[0.3em] uppercase mb-2 block">{cat.count}</span>
-                  <h3 className="text-4xl font-black uppercase tracking-tighter mb-4">{cat.title}</h3>
+                  <h3 className="text-2xl sm:text-4xl font-black uppercase tracking-tighter mb-4">{cat.title}</h3>
                   <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all">
                     Explore Collection <ArrowRight className="w-4 h-4" />
                   </div>

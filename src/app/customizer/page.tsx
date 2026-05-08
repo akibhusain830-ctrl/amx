@@ -30,6 +30,7 @@ export default function CustomizerPage() {
   const [selectedColor, setSelectedColor] = useState(neonColors[0]);
   const [selectedSize, setSelectedSize] = useState("60cm");
   const [selectedFont, setSelectedFont] = useState("Bold Sans");
+  const [showPreview, setShowPreview] = useState(false);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -122,13 +123,27 @@ export default function CustomizerPage() {
           </p>
         </div>
 
+        {/* Mobile Preview Toggle */}
+        <div className="lg:hidden flex items-center justify-between mb-6">
+          <p className="text-[10px] font-mono text-text-muted uppercase tracking-widest">
+            {showPreview ? "Previewing your design" : "Controls active"}
+          </p>
+          <button
+            onClick={() => setShowPreview(!showPreview)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-white/10 text-xs font-black uppercase tracking-widest hover:border-primary/50 transition-colors"
+          >
+            <Palette className="w-3.5 h-3.5 text-primary" />
+            {showPreview ? "Back to Controls" : "View Preview"}
+          </button>
+        </div>
+
         <div className="grid lg:grid-cols-2 gap-12">
-          {/* Preview Stage */}
+          {/* Preview Stage — always visible on lg, toggleable on mobile */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="relative aspect-square md:aspect-[4/3] rounded-3xl overflow-hidden border border-white/10 bg-[#050505] flex items-center justify-center"
+            className={`relative aspect-square md:aspect-[4/3] rounded-3xl overflow-hidden border border-white/10 bg-[#050505] flex items-center justify-center ${showPreview ? "block" : "hidden"} lg:block`}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent" />
             <div className="relative z-10 text-center px-8">
@@ -155,8 +170,8 @@ export default function CustomizerPage() {
             </div>
           </motion.div>
 
-          {/* Controls */}
-          <div className="space-y-8">
+          {/* Controls — always visible on lg, toggleable on mobile */}
+          <div className={`space-y-8 ${showPreview ? "hidden" : "block"} lg:block`}>
             {/* Step Tabs */}
             <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
               {steps.map((step) => (

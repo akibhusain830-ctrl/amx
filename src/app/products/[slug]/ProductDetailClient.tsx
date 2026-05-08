@@ -165,33 +165,10 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="flex gap-4"
+            className="flex flex-col gap-4"
           >
-            {/* Thumbnails */}
-            {images.length > 1 && (
-              <div className="flex flex-col gap-3 w-20 order-2 lg:order-1">
-                {images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedImageIndex(idx)}
-                    className={`relative aspect-[4/5] rounded-xl overflow-hidden border-2 transition-all ${
-                      selectedImageIndex === idx
-                        ? "border-primary"
-                        : "border-white/10 hover:border-white/30"
-                    }`}
-                  >
-                    <img
-                      src={img}
-                      alt={`${product.title} view ${idx + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
-
             {/* Main Image */}
-            <div className="flex-1 order-1 lg:order-2 relative aspect-[4/3] md:aspect-[3/2] rounded-3xl overflow-hidden border border-white/10 bg-surface flex items-center justify-center">
+            <div className="relative aspect-[4/3] md:aspect-[3/2] rounded-3xl overflow-hidden border border-white/10 bg-surface flex items-center justify-center">
               {/* Product Image or Room Mockup */}
               {images.length > 0 && images[selectedImageIndex] ? (
                 <img
@@ -225,6 +202,29 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 </div>
               )}
             </div>
+
+            {/* Thumbnails — horizontal scroll row on mobile, hidden if only 1 image */}
+            {images.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+                {images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedImageIndex(idx)}
+                    className={`relative aspect-[4/5] w-16 sm:w-20 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${
+                      selectedImageIndex === idx
+                        ? "border-primary"
+                        : "border-white/10 hover:border-white/30"
+                    }`}
+                  >
+                    <img
+                      src={img}
+                      alt={`${product.title} view ${idx + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </motion.div>
 
           {/* Details */}

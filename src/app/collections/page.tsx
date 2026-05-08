@@ -82,7 +82,7 @@ export default function CollectionsPage() {
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
             {/* Category Filter */}
             <div className="flex items-center gap-2 bg-surface border border-white/10 rounded-full px-4 py-2">
               <Filter className="w-3.5 h-3.5 text-primary" />
