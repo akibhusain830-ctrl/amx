@@ -7,11 +7,12 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShoppingBag, Ticket, Check, X, Loader2, ChevronRight,
-  Truck, ShieldCheck, Zap, ArrowLeft, Tag,
+  Truck, ShieldCheck, Zap, ArrowLeft, Tag, Lock, UserPlus
 } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { formatPrice } from "@/lib/utils";
 import Header from "@/components/Header";
+import { supabase } from "@/lib/supabase";
 
 declare global {
   interface Window {
@@ -56,9 +57,20 @@ export default function CheckoutPage() {
   const [appliedCoupon, setAppliedCoupon] = useState<CouponResult | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Sign up state for success page
+  const [successPassword, setSuccessPassword] = useState("");
+  const [signUpLoading, setSignUpLoading] = useState(false);
+  const [signUpSuccess, setSignUpSuccess] = useState(false);
 
   const discount = appliedCoupon?.discount ?? 0;
   const finalTotal = subtotal - discount;
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Load Razorpay script
   useEffect(() => {
@@ -67,6 +79,27 @@ export default function CheckoutPage() {
     script.async = true;
     document.body.appendChild(script);
     return () => { document.body.removeChild(script); };
+  }, []);
+
+  // Pre-fill user data
+  useEffect(() => {
+    const prefillUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUser(user);
+        setForm(f => ({
+          ...f,
+          name: user.user_metadata?.full_name || f.name,
+          email: user.email || f.email,
+          phone: user.user_metadata?.phone || f.phone,
+          address: user.user_metadata?.address || f.address,
+          city: user.user_metadata?.city || f.city,
+          state: user.user_metadata?.state || f.state,
+          pincode: user.user_metadata?.pincode || f.pincode,
+        }));
+      }
+    };
+    prefillUser();
   }, []);
 
   // Redirect if cart is empty
@@ -89,7 +122,7 @@ export default function CheckoutPage() {
       const res = await fetch("/api/coupons/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code, subtotal }),
+        body: JSON.stringify({ code, subtotal, email: form.email }),
       });
       const data = await res.json();
       if (!res.ok || !data.valid) {
@@ -102,7 +135,7 @@ export default function CheckoutPage() {
     } finally {
       setCouponLoading(false);
     }
-  }, [couponInput, subtotal]);
+  }, [couponInput, subtotal, form.email]);
 
   const removeCoupon = () => {
     setAppliedCoupon(null);
@@ -127,7 +160,6 @@ export default function CheckoutPage() {
     setPaymentLoading(true);
 
     try {
-      // Create Razorpay order
       const orderRes = await fetch("/api/razorpay", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -138,7 +170,6 @@ export default function CheckoutPage() {
 
       const shippingAddress = `${form.address}, ${form.city}, ${form.state} - ${form.pincode}`;
 
-      // Mock checkout flow
       setTimeout(async () => {
         try {
           const verifyRes = await fetch("/api/razorpay/verify", {
@@ -168,8 +199,6 @@ export default function CheckoutPage() {
           if (verifyData.verified) {
             clearCart();
             setOrderSuccess(verifyData.orderId);
-          } else {
-            console.error("Mock verification failed", verifyData);
           }
         } catch (e) {
           console.error("Mock checkout error", e);
@@ -184,14 +213,47 @@ export default function CheckoutPage() {
     }
   };
 
-  // ─── Order Success Screen ───────────────────────────────────────────────────
+  const handleSuccessSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!successPassword || successPassword.length < 6) return;
+    setSignUpLoading(true);
+
+    const { error } = await supabase.auth.signUp({
+      email: form.email,
+      password: successPassword,
+      options: {
+        data: {
+          full_name: form.name,
+          phone: form.phone,
+          address: form.address,
+          city: form.city,
+          state: form.state,
+          pincode: form.pincode,
+        }
+      }
+    });
+
+    if (!error) {
+      setSignUpSuccess(true);
+    }
+    setSignUpLoading(false);
+  };
+
+  if (!isMounted) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   if (orderSuccess) {
     return (
-      <main className="min-h-screen bg-black flex items-center justify-center px-6">
+      <main className="min-h-screen bg-black flex flex-col items-center justify-center px-6 py-20">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center max-w-md"
+          className="text-center max-w-md w-full"
         >
           <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-6 neon-bloom-lime">
             <Check className="w-10 h-10 text-black" />
@@ -200,16 +262,78 @@ export default function CheckoutPage() {
           <p className="text-text-muted text-sm mb-2">
             Thank you, <span className="text-white font-bold">{form.name}</span>. Your neon sign is being crafted.
           </p>
-          <p className="text-xs font-mono text-text-muted mb-8">
+          <p className="text-xs font-mono text-text-muted mb-10">
             Confirmation sent to <span className="text-primary">{form.email}</span>
           </p>
-          <Link
-            href="/collections"
-            className="inline-flex items-center gap-2 bg-primary text-black px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 transition-transform"
-          >
-            <ShoppingBag className="w-4 h-4" />
-            Continue Shopping
-          </Link>
+
+          <div className="space-y-4">
+            {/* Post-purchase Sign Up */}
+            {!currentUser && !signUpSuccess && (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="bg-surface border border-white/10 rounded-3xl p-6 text-left mb-8"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <UserPlus className="w-5 h-5 text-primary" />
+                  <h3 className="text-sm font-black uppercase tracking-widest">Track your order</h3>
+                </div>
+                <p className="text-xs text-text-muted mb-5 leading-relaxed">
+                  Set a password to create an account and track your neon journey in real-time. We've already saved your details!
+                </p>
+                <form onSubmit={handleSuccessSignUp} className="space-y-3">
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                    <input 
+                      type="password"
+                      placeholder="Enter a password"
+                      value={successPassword}
+                      onChange={(e) => setSuccessPassword(e.target.value)}
+                      className="w-full bg-black border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm focus:border-primary outline-none transition-colors"
+                      required
+                    />
+                  </div>
+                  <button 
+                    disabled={signUpLoading}
+                    className="w-full bg-white text-black py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] transition-transform flex items-center justify-center gap-2"
+                  >
+                    {signUpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Account"}
+                  </button>
+                </form>
+              </motion.div>
+            )}
+
+            {signUpSuccess && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-primary/10 border border-primary/20 rounded-3xl p-6 mb-8"
+              >
+                <div className="flex items-center gap-3 text-primary mb-2">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <h3 className="text-sm font-black uppercase tracking-widest">Account Created!</h3>
+                </div>
+                <p className="text-xs text-text-muted">You can now track your order in your new dashboard.</p>
+              </motion.div>
+            )}
+
+            <div className="flex flex-col gap-3">
+              <Link
+                href="/collections"
+                className="inline-flex items-center justify-center gap-2 bg-primary text-black px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 transition-transform"
+              >
+                <ShoppingBag className="w-4 h-4" />
+                Continue Shopping
+              </Link>
+              <Link
+                href="/profile"
+                className="text-xs font-black uppercase tracking-widest text-text-muted hover:text-white py-2"
+              >
+                Go to Dashboard
+              </Link>
+            </div>
+          </div>
         </motion.div>
       </main>
     );
@@ -219,7 +343,6 @@ export default function CheckoutPage() {
     <main className="min-h-screen bg-black selection:bg-primary/30 selection:text-primary">
       <Header />
       <div className="pt-28 pb-24 container mx-auto px-4 sm:px-6 max-w-6xl">
-        {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs font-mono text-text-muted uppercase tracking-widest mb-10">
           <Link href="/collections" className="hover:text-primary transition-colors flex items-center gap-1">
             <ArrowLeft className="w-3 h-3" /> Shop
@@ -229,14 +352,12 @@ export default function CheckoutPage() {
         </div>
 
         <div className="grid lg:grid-cols-[1fr_420px] gap-10 lg:gap-14 items-start">
-          {/* ── Left: Form ─────────────────────────────────────────── */}
           <div className="space-y-8">
             <div>
               <h1 className="text-3xl font-black uppercase tracking-tighter mb-1">Checkout</h1>
               <p className="text-text-muted text-sm">Complete your order. Free shipping PAN-India.</p>
             </div>
 
-            {/* Contact */}
             <Section title="Contact Information">
               <div className="grid sm:grid-cols-2 gap-4">
                 <Input label="Full Name" name="name" value={form.name} onChange={handleField} placeholder="Akib Husain" />
@@ -245,7 +366,6 @@ export default function CheckoutPage() {
               </div>
             </Section>
 
-            {/* Shipping */}
             <Section title="Shipping Address">
               <div className="grid sm:grid-cols-2 gap-4">
                 <Input label="Street Address" name="address" value={form.address} onChange={handleField} placeholder="House no, Street, Area" className="sm:col-span-2" />
@@ -255,7 +375,6 @@ export default function CheckoutPage() {
               </div>
             </Section>
 
-            {/* Trust */}
             <div className="grid grid-cols-3 gap-4 py-6 border-t border-b border-white/5">
               {[
                 { icon: Truck, label: "Free Shipping", sub: "All orders, PAN-India" },
@@ -271,9 +390,7 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* ── Right: Order Summary ────────────────────────────────── */}
           <div className="space-y-6 lg:sticky lg:top-28">
-            {/* Items */}
             <div className="bg-surface border border-white/5 rounded-2xl overflow-hidden">
               <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between">
                 <h2 className="text-sm font-black uppercase tracking-widest">Order Summary</h2>
@@ -300,11 +417,17 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Coupon */}
             <div className="bg-surface border border-white/5 rounded-2xl p-5 space-y-3">
-              <div className="flex items-center gap-2 mb-1">
-                <Tag className="w-4 h-4 text-primary" />
-                <span className="text-xs font-black uppercase tracking-widest">Promo Code</span>
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-black uppercase tracking-widest">Promo Code</span>
+                </div>
+                {!appliedCoupon && (
+                  <span className="text-[10px] font-mono text-primary animate-pulse uppercase tracking-wider">
+                    Use FIRSTSIGN for 20% off
+                  </span>
+                )}
               </div>
 
               <AnimatePresence mode="wait">
@@ -358,7 +481,6 @@ export default function CheckoutPage() {
               )}
             </div>
 
-            {/* Totals */}
             <div className="bg-surface border border-white/5 rounded-2xl p-5 space-y-3">
               <div className="flex justify-between text-sm text-text-muted">
                 <span>Subtotal</span>
@@ -382,7 +504,6 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Pay Button */}
             <motion.button
               whileTap={{ scale: 0.98 }}
               onClick={handlePayment}
@@ -397,7 +518,7 @@ export default function CheckoutPage() {
             </motion.button>
 
             <p className="text-[10px] font-mono text-text-muted text-center">
-              Secured by Razorpay · UPI, Cards, NetBanking & COD
+              Secured by Razorpay · UPI, Cards & NetBanking
             </p>
           </div>
         </div>
@@ -405,8 +526,6 @@ export default function CheckoutPage() {
     </main>
   );
 }
-
-// ── Sub-components ────────────────────────────────────────────────────────────
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -438,5 +557,25 @@ function Input({
         className="bg-black border border-white/10 focus:border-primary rounded-xl px-4 py-3 text-sm outline-none transition-colors placeholder:text-white/20"
       />
     </div>
+  );
+}
+
+function CheckCircle2(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
   );
 }

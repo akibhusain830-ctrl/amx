@@ -16,6 +16,7 @@ type Coupon = {
   active: boolean;
   starts_at: string | null;
   ends_at: string | null;
+  is_first_order_only: boolean;
   created_at?: string;
 };
 
@@ -29,6 +30,7 @@ const emptyForm = {
   startsAt: "",
   endsAt: "",
   active: true,
+  isFirstOrderOnly: false,
 };
 
 export default function AdminCouponsPage() {
@@ -78,6 +80,7 @@ export default function AdminCouponsPage() {
       starts_at: form.startsAt || null,
       ends_at: form.endsAt || null,
       active: form.active,
+      is_first_order_only: form.isFirstOrderOnly,
     };
 
     const { error: upsertError } = await supabase
@@ -198,6 +201,14 @@ export default function AdminCouponsPage() {
             />
             Active
           </label>
+          <label className="flex items-center gap-2 px-2 text-sm text-text-muted">
+            <input
+              type="checkbox"
+              checked={form.isFirstOrderOnly}
+              onChange={(e) => setForm((f) => ({ ...f, isFirstOrderOnly: e.target.checked }))}
+            />
+            First Order Only
+          </label>
         </div>
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -233,6 +244,9 @@ export default function AdminCouponsPage() {
                     {coupon.max_discount ? ` | Max INR ${coupon.max_discount}` : ""}
                     {coupon.usage_limit ? ` | Limit ${coupon.usage_limit}` : ""}
                     {coupon.used_count ? ` | Used ${coupon.used_count}` : ""}
+                    {coupon.is_first_order_only && (
+                      <span className="ml-2 text-[10px] font-black bg-primary/20 text-primary px-1.5 py-0.5 rounded uppercase tracking-wider">First Order Only</span>
+                    )}
                   </p>
                 </div>
 

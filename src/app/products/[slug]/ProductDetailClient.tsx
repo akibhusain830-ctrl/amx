@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Star,
   ShieldCheck,
@@ -18,11 +18,11 @@ import {
   Info,
   Mail,
   Loader2,
-} from "lucide-react";
-import { Product } from "@/lib/products";
-import { useCartStore } from "@/store/cartStore";
-import { formatPrice } from "@/lib/utils";
-import Header from "@/components/Header";
+} from 'lucide-react';
+import { Product } from '@/lib/products';
+import { useCartStore } from '@/store/cartStore';
+import { formatPrice } from '@/lib/utils';
+import Header from '@/components/Header';
 
 interface ProductDetailClientProps {
   product: Product;
@@ -30,36 +30,38 @@ interface ProductDetailClientProps {
 
 // Notify-me form for sold-out products
 function SoldOutNotify({ productTitle, productId }: { productTitle: string; productId: string }) {
-  const [email, setEmail] = React.useState("");
-  const [status, setStatus] = React.useState<"idle" | "loading" | "done">("idle");
+  const [email, setEmail] = React.useState('');
+  const [status, setStatus] = React.useState<'idle' | 'loading' | 'done'>('idle');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    setStatus("loading");
+    setStatus('loading');
     try {
-      await fetch("/api/notify-restock", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      await fetch('/api/notify-restock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, productId, productTitle }),
       });
-    } catch {/* silent */ } finally {
-      setStatus("done");
+    } catch {
+      /* silent */
+    } finally {
+      setStatus('done');
     }
   };
 
-  if (status === "done") {
+  if (status === 'done') {
     return (
       <div className="w-full py-4 rounded-2xl bg-accent-mint/10 border border-accent-mint/20 flex items-center justify-center gap-2 text-accent-mint">
         <Check className="w-5 h-5" />
-        <span className="text-sm font-black uppercase tracking-widest">You'll be notified when it's back!</span>
+        <span className="text-sm font-black uppercase tracking-widest">You&apos;ll be notified when it&apos;s back!</span>
       </div>
     );
   }
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-text-muted font-mono">This item is sold out. Drop your email and we'll let you know when it's back.</p>
+      <p className="text-sm text-text-muted font-mono">This item is sold out. Drop your email and we&apos;ll let you know when it&apos;s back.</p>
       <form onSubmit={handleSubmit} className="flex gap-2">
         <div className="relative flex-1">
           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
@@ -74,22 +76,20 @@ function SoldOutNotify({ productTitle, productId }: { productTitle: string; prod
         </div>
         <button
           type="submit"
-          disabled={status === "loading"}
+          disabled={status === 'loading'}
           className="bg-white/10 hover:bg-white/20 border border-white/10 text-white px-5 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-colors flex items-center gap-2 disabled:opacity-50"
         >
-          {status === "loading" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Notify Me"}
+          {status === 'loading' ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Notify Me'}
         </button>
       </form>
     </div>
   );
 }
 
-const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
-  product,
-}) => {
+const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product }) => {
   const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState("Regular");
-  const [activeTab, setActiveTab] = useState<"details" | "box" | "install" | "faq">("details");
+  const [selectedSize, setSelectedSize] = useState('Regular');
+  const [activeTab, setActiveTab] = useState<'details' | 'box' | 'install' | 'faq'>('details');
   const addItem = useCartStore((state) => state.addItem);
   const openCart = useCartStore((state) => state.openCart);
   const [added, setAdded] = useState(false);
@@ -103,15 +103,15 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
     large: product.variants?.large ?? { dimensions: '28" x 22"', price: product.price + 3500, original_price: null },
   };
 
-  const currentVariant = selectedSize.toLowerCase() === "regular"
+  const currentVariant = selectedSize.toLowerCase() === 'regular'
     ? variants.regular
-    : selectedSize.toLowerCase() === "medium"
+    : selectedSize.toLowerCase() === 'medium'
       ? variants.medium
       : variants.large;
 
   const finalPrice = currentVariant.price;
   const finalOriginalPrice = currentVariant.original_price;
-  const savings = finalOriginalPrice ? (finalOriginalPrice - finalPrice) : 0;
+  const savings = finalOriginalPrice ? finalOriginalPrice - finalPrice : 0;
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
@@ -127,7 +127,7 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
   return (
     <main className="min-h-screen bg-black selection:bg-primary/30 selection:text-primary">
       <Header />
-      <div className="pt-28 pb-24 container mx-auto px-6">
+      <div className="pt-24 pb-24 container mx-auto px-6">
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="mb-8">
           <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-mono text-text-muted uppercase tracking-widest">
@@ -138,19 +138,13 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
             </li>
             <li className="text-white/20">/</li>
             <li>
-              <Link
-                href="/collections"
-                className="hover:text-primary transition-colors"
-              >
+              <Link href="/collections" className="hover:text-primary transition-colors">
                 Shop
               </Link>
             </li>
             <li className="text-white/20">/</li>
             <li>
-              <Link
-                href={`/collections/${product.category.toLowerCase()}`}
-                className="hover:text-primary transition-colors"
-              >
+              <Link href={`/collections/${product.category.toLowerCase()}`} className="hover:text-primary transition-colors">
                 {product.category}
               </Link>
             </li>
@@ -168,14 +162,9 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
             className="flex flex-col gap-4"
           >
             {/* Main Image */}
-            <div className="relative aspect-[4/3] md:aspect-[3/2] rounded-3xl overflow-hidden border border-white/10 bg-surface flex items-center justify-center">
-              {/* Product Image or Room Mockup */}
+            <div className="relative aspect-[9/10] rounded-3xl overflow-hidden border border-white/10 bg-surface flex items-center justify-center">
               {images.length > 0 && images[selectedImageIndex] ? (
-                <img
-                  src={images[selectedImageIndex]}
-                  alt={product.title}
-                  className="w-full h-full object-cover"
-                />
+                <img src={images[selectedImageIndex]} alt={product.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
                   <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(198,255,0,0.08) 0%, transparent 70%)' }} />
@@ -189,38 +178,25 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                   </div>
                 </div>
               )}
-              {product.badge && (
-                <div className="absolute top-6 left-6 bg-primary text-black text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full">
-                  {product.badge}
-                </div>
-              )}
+              {product.badge && <div className="absolute top-4 left-4 bg-primary text-black text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-lg">{product.badge}</div>}
               {!product.in_stock && (
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                  <span className="text-2xl font-black uppercase tracking-tighter text-white/60">
-                    Sold Out
-                  </span>
+                  <span className="text-2xl font-black uppercase tracking-tighter text-white/60">Sold Out</span>
                 </div>
               )}
             </div>
 
-            {/* Thumbnails — horizontal scroll row on mobile, hidden if only 1 image */}
+            {/* Thumbnails */}
             {images.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
                 {images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedImageIndex(idx)}
-                    className={`relative aspect-[4/5] w-16 sm:w-20 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${
-                      selectedImageIndex === idx
-                        ? "border-primary"
-                        : "border-white/10 hover:border-white/30"
-                    }`}
+                    className={`relative aspect-[9/10] w-16 sm:w-20 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${selectedImageIndex === idx ? 'border-primary' : 'border-white/10 hover:border-white/30'
+                      }`}
                   >
-                    <img
-                      src={img}
-                      alt={`${product.title} view ${idx + 1}`}
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={img} alt={`${product.title} view ${idx + 1}`} className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
@@ -234,39 +210,12 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
             transition={{ duration: 0.6, delay: 0.1 }}
             className="flex flex-col"
           >
-            <span className="text-[10px] font-mono text-primary uppercase tracking-[0.3em] mb-3">
-              {product.category}
-            </span>
-            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-4">
-              {product.title}
-            </h1>
-
-            <div className="flex items-center gap-3 mb-6">
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-4 h-4 ${i < Math.floor(product.rating)
-                        ? "text-primary fill-current"
-                        : "text-white/20"
-                      }`}
-                  />
-                ))}
-              </div>
-              <span className="text-xs font-mono text-text-muted">
-                Premium Quality
-              </span>
-            </div>
+            <span className="text-[10px] font-mono text-primary uppercase tracking-[0.3em] mb-3">{product.category}</span>
+            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-6">{product.title}</h1>
 
             <div className="flex items-baseline gap-3 mb-2">
-              <span className="text-3xl font-mono font-black text-primary">
-                {formatPrice(finalPrice)}
-              </span>
-              {finalOriginalPrice && (
-                <span className="text-lg font-mono text-text-muted line-through">
-                  {formatPrice(finalOriginalPrice)}
-                </span>
-              )}
+              <span className="text-3xl font-mono font-black text-primary">{formatPrice(finalPrice)}</span>
+              {finalOriginalPrice && <span className="text-lg font-mono text-text-muted line-through">{formatPrice(finalOriginalPrice)}</span>}
               {savings > 0 && (
                 <span className="text-[10px] font-black bg-primary/20 text-primary px-2 py-1 rounded uppercase tracking-wider">
                   SAVE {formatPrice(savings)}
@@ -281,30 +230,24 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
               </div>
             )}
 
-            <p className="text-white/80 text-sm leading-relaxed mb-8 max-w-lg">
-              Product color may slightly vary from the images due to the difference in lighting.
-            </p>
+            <p className="text-white/80 text-sm leading-relaxed mb-8 max-w-lg">Product color may slightly vary from the images due to the difference in lighting.</p>
 
             {/* Size Selector */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-mono uppercase tracking-widest text-text-muted">Size</span>
-                <span className="text-[10px] font-mono text-primary">
-                  {(currentVariant.dimensions?.replace(/""+/g, '"') || "") + " inches"}
-                </span>
+                <span className="text-[10px] font-mono text-primary">{(currentVariant.dimensions?.replace(/""+/g, '"') || '') + ' inches'}</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { name: "Regular", data: variants.regular },
-                  { name: "Medium", data: variants.medium },
-                  { name: "Large", data: variants.large },
+                  { name: 'Regular', data: variants.regular },
+                  { name: 'Medium', data: variants.medium },
+                  { name: 'Large', data: variants.large },
                 ].map((size) => (
                   <button
                     key={size.name}
                     onClick={() => setSelectedSize(size.name)}
-                    className={`relative py-3.5 px-3 rounded-xl text-sm font-black uppercase tracking-wider border transition-all ${selectedSize === size.name
-                        ? "bg-primary text-black border-primary"
-                        : "bg-surface border-white/10 text-text-muted hover:border-white/30"
+                    className={`relative py-3.5 px-3 rounded-xl text-sm font-black uppercase tracking-wider border transition-all ${selectedSize === size.name ? 'bg-primary text-black border-primary' : 'bg-surface border-white/10 text-text-muted hover:border-white/30'
                       }`}
                   >
                     {size.name}
@@ -318,25 +261,13 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
             {product.in_stock ? (
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                  <span className="text-xs font-mono uppercase tracking-widest text-text-muted">
-                    Quantity
-                  </span>
+                  <span className="text-xs font-mono uppercase tracking-widest text-text-muted">Quantity</span>
                   <div className="flex items-center gap-2 bg-surface rounded-full border border-white/10">
-                    <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="p-3 hover:text-primary transition-colors"
-                      aria-label="Decrease quantity"
-                    >
+                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-3 hover:text-primary transition-colors" aria-label="Decrease quantity">
                       <Minus className="w-4 h-4" />
                     </button>
-                    <span className="text-sm font-mono w-8 text-center">
-                      {quantity}
-                    </span>
-                    <button
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="p-3 hover:text-primary transition-colors"
-                      aria-label="Increase quantity"
-                    >
+                    <span className="text-sm font-mono w-8 text-center">{quantity}</span>
+                    <button onClick={() => setQuantity(quantity + 1)} className="p-3 hover:text-primary transition-colors" aria-label="Increase quantity">
                       <Plus className="w-4 h-4" />
                     </button>
                   </div>
@@ -346,9 +277,7 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleAddToCart}
-                  className={`w-full py-5 rounded-full font-black text-sm tracking-[0.2em] uppercase flex items-center justify-center gap-3 transition-all ${added
-                      ? "bg-accent-mint text-black"
-                      : "bg-primary text-black neon-bloom-lime"
+                  className={`w-full py-5 rounded-full font-black text-sm tracking-[0.2em] uppercase flex items-center justify-center gap-3 transition-all ${added ? 'bg-accent-mint text-black' : 'bg-primary text-black neon-bloom-lime'
                     }`}
                 >
                   {added ? (
@@ -370,21 +299,15 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
             <div className="pt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-4 border-t border-white/10">
               <div className="flex items-center sm:flex-col gap-3 sm:gap-2 sm:text-center">
                 <ShieldCheck className="text-primary w-6 h-6 shrink-0" />
-                <span className="text-xs sm:text-[10px] font-mono text-text-muted uppercase tracking-widest">
-                  1 Year Warranty
-                </span>
+                <span className="text-xs sm:text-[10px] font-mono text-text-muted uppercase tracking-widest">1 Year Warranty</span>
               </div>
               <div className="flex items-center sm:flex-col gap-3 sm:gap-2 sm:text-center">
                 <Truck className="text-primary w-6 h-6 shrink-0" />
-                <span className="text-xs sm:text-[10px] font-mono text-text-muted uppercase tracking-widest">
-                  Free Shipping
-                </span>
+                <span className="text-xs sm:text-[10px] font-mono text-text-muted uppercase tracking-widest">Free Shipping</span>
               </div>
               <div className="flex items-center sm:flex-col gap-3 sm:gap-2 sm:text-center">
                 <Check className="text-primary w-6 h-6 shrink-0" />
-                <span className="text-xs sm:text-[10px] font-mono text-text-muted uppercase tracking-widest">
-                  Handcrafted
-                </span>
+                <span className="text-xs sm:text-[10px] font-mono text-text-muted uppercase tracking-widest">Handcrafted</span>
               </div>
             </div>
           </motion.div>
@@ -394,19 +317,16 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
         <div className="mt-20">
           <div className="flex gap-4 border-b border-white/10 mb-6 overflow-x-auto scrollbar-hide">
             {[
-              { id: "details", label: "Product Details", icon: Info },
-              { id: "box", label: "In The Box", icon: Package },
-              { id: "install", label: "Installation", icon: Wrench },
-              { id: "faq", label: "FAQs", icon: Sparkles },
+              { id: 'details', label: 'Product Details', icon: Info },
+              { id: 'box', label: 'In The Box', icon: Package },
+              { id: 'install', label: 'Installation', icon: Wrench },
+              { id: 'faq', label: 'FAQs', icon: Sparkles },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`flex items-center gap-2 pb-3 text-[11px] font-black uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? "border-primary text-primary"
-                    : "border-transparent text-text-muted hover:text-white"
-                }`}
+                className={`flex items-center gap-2 pb-3 text-[11px] font-black uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-text-muted hover:text-white'
+                  }`}
               >
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
@@ -415,7 +335,7 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
           </div>
 
           <AnimatePresence mode="wait">
-            {activeTab === "details" && (
+            {activeTab === 'details' && (
               <motion.div key="details" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                 <div className="rounded-2xl border border-white/10 bg-surface/70 p-5 md:p-6 mb-5">
                   <p className="text-primary font-mono text-[10px] uppercase tracking-[0.3em] mb-2">Product Details</p>
@@ -435,16 +355,16 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 </div>
               </motion.div>
             )}
-            {activeTab === "box" && (
+            {activeTab === 'box' && (
               <motion.div key="box" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {[
-                    { icon: Zap, label: "Neon Sign", desc: "Your chosen design in LED neon" },
-                    { icon: Package, label: "Mounting Kit", desc: "Screws, wall anchors & brackets" },
-                    { icon: ShieldCheck, label: "1Y Warranty Card", desc: "Register for full coverage" },
-                    { icon: Sparkles, label: "USB Power Adapter", desc: "5V safe low-voltage adapter" },
-                    { icon: Wrench, label: "Install Guide", desc: "Step-by-step manual included" },
-                    { icon: Truck, label: "Protective Packaging", desc: "Foam-lined corrugated box" },
+                    { icon: Zap, label: 'Neon Sign', desc: 'Your chosen design in LED neon' },
+                    { icon: Package, label: 'Mounting Kit', desc: 'Screws, wall anchors & brackets' },
+                    { icon: ShieldCheck, label: '1Y Warranty Card', desc: 'Register for full coverage' },
+                    { icon: Sparkles, label: '12V Power Adapter', desc: '12V safe low-voltage adapter' },
+                    { icon: Wrench, label: 'Install Guide', desc: 'Step-by-step manual included' },
+                    { icon: Truck, label: 'Protective Packaging', desc: 'Foam-lined corrugated box' },
                   ].map((item, i) => (
                     <div key={i} className="bg-surface border border-white/5 rounded-xl p-5">
                       <item.icon className="w-6 h-6 text-primary mb-3" />
@@ -455,14 +375,14 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 </div>
               </motion.div>
             )}
-            {activeTab === "install" && (
+            {activeTab === 'install' && (
               <motion.div key="install" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
                 <div className="grid sm:grid-cols-2 gap-6 max-w-3xl">
                   {[
-                    { step: "01", title: "Mark & Drill", desc: "Use included template to mark holes. Drill with 6mm bit." },
-                    { step: "02", title: "Insert Anchors", desc: "Push wall anchors into drilled holes." },
-                    { step: "03", title: "Mount Brackets", desc: "Screw brackets flush to wall." },
-                    { step: "04", title: "Hang & Plug", desc: "Slide sign onto brackets. Connect USB adapter." },
+                    { step: '01', title: 'Mark & Drill', desc: 'Use included template to mark holes. Drill with 6mm bit.' },
+                    { step: '02', title: 'Insert Anchors', desc: 'Push wall anchors into drilled holes.' },
+                    { step: '03', title: 'Mount Brackets', desc: 'Screw brackets flush to wall.' },
+                    { step: '04', title: 'Hang & Plug', desc: 'Slide sign onto brackets. Connect 12V adapter.' },
                   ].map((item) => (
                     <div key={item.step} className="flex gap-4 bg-surface border border-white/5 rounded-xl p-5">
                       <span className="text-2xl font-black text-primary/30">{item.step}</span>
@@ -476,14 +396,14 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 <p className="text-[10px] font-mono text-text-muted mt-6">Installation time: ~10 minutes. No electrician required.</p>
               </motion.div>
             )}
-            {activeTab === "faq" && (
+            {activeTab === 'faq' && (
               <motion.div key="faq" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="max-w-3xl space-y-4">
                 {[
-                  { q: "Is it safe for bedrooms?", a: "Yes. Our signs use 5V low-voltage LEDs that stay cool to the touch and consume less power than a phone charger." },
-                  { q: "Can I use it outdoors?", a: "Indoor use is recommended. For outdoor use, add our Waterproof IP67 add-on at checkout." },
-                  { q: "What's the return policy?", a: "7-day no-questions return. If the sign arrives damaged, we replace it free — no return needed." },
-                  { q: "How long does shipping take?", a: "We provide fast dispatch. Metro cities: 3-5 days. Others: 5-8 days." },
-                  { q: "Can I customise the text?", a: "Absolutely. Contact us with your idea and our team will help craft a custom neon design for you." },
+                  { q: 'Is it safe for bedrooms?', a: 'Yes. Our signs use 12V low-voltage LEDs that stay cool to the touch and consume very little power.' },
+                  { q: 'Can I use it outdoors?', a: 'Our signs are designed for indoor use.' },
+                  { q: 'What\'s the return policy?', a: '7-day no-questions return. If the sign arrives damaged, we replace it free — no return needed.' },
+                  { q: 'How long does shipping take?', a: 'We provide fast dispatch. Metro cities: 3-5 days. Others: 5-8 days.' },
+                  { q: 'Can I customise the text?', a: 'Absolutely. Contact us with your idea and our team will help craft a custom neon design for you.' },
                 ].map((faq, i) => (
                   <div key={i} className="bg-surface border border-white/5 rounded-xl p-5">
                     <h4 className="text-sm font-black uppercase tracking-wide mb-2">{faq.q}</h4>
@@ -502,18 +422,16 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
           <div className="flex items-center gap-4">
             <div className="flex-1">
               <p className="text-lg font-mono font-black text-primary">{formatPrice(finalPrice)}</p>
-              {finalOriginalPrice && (
-                <p className="text-[10px] font-mono text-text-muted line-through">{formatPrice(finalOriginalPrice)}</p>
-              )}
+              {finalOriginalPrice && <p className="text-[10px] font-mono text-text-muted line-through">{formatPrice(finalOriginalPrice)}</p>}
             </div>
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={handleAddToCart}
-              className={`px-8 py-3.5 rounded-full font-black text-xs tracking-[0.15em] uppercase flex items-center gap-2 ${added ? "bg-accent-mint text-black" : "bg-primary text-black"
+              className={`px-8 py-3.5 rounded-full font-black text-xs tracking-[0.15em] uppercase flex items-center gap-2 ${added ? 'bg-accent-mint text-black' : 'bg-primary text-black'
                 }`}
             >
               {added ? <Check className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
-              {added ? "Added" : "Add to Cart"}
+              {added ? 'Added' : 'Add to Cart'}
             </motion.button>
           </div>
         </div>

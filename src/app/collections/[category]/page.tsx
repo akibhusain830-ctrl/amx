@@ -46,7 +46,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     return (
       <main className="min-h-screen bg-black selection:bg-primary/30 selection:text-primary">
         <Header />
-        <div className="pt-28 pb-24 container mx-auto px-4 sm:px-6">
+        <div className="pt-24 pb-24 container mx-auto px-4 sm:px-6">
           <div className="mb-6 md:mb-12">
             <span className="text-primary font-mono text-xs uppercase tracking-[0.3em] mb-4 block">
               Collection
@@ -75,7 +75,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   return (
     <main className="min-h-screen bg-black selection:bg-primary/30 selection:text-primary">
       <Header />
-      <div className="pt-28 pb-24 container mx-auto px-4 sm:px-6">
+      <div className="pt-24 pb-24 container mx-auto px-4 sm:px-6">
         <div className="mb-6 md:mb-12">
           <span className="text-primary font-mono text-xs uppercase tracking-[0.3em] mb-4 block">
             Collection

@@ -27,17 +27,17 @@ export default async function Home() {
       <AnnouncementBar />
       <Header />
       <Hero />
-      <TrustBar />
+
 
       {/* USP Grid */}
-      <section className="py-12 md:py-14 border-b border-white/5">
+      <section className="py-8 md:py-10 border-b border-white/5">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 min-[360px]:grid-cols-2 md:grid-cols-4 gap-6">
             {[
               { icon: Zap, title: "Handmade", desc: "Premium handcrafted LED neon" },
               { icon: Truck, title: "Free Shipping", desc: "On all orders, PAN-India" },
               { icon: ShieldCheck, title: "1Y Warranty", desc: "Hassle-free replacements" },
-              { icon: Star, title: "COD Available", desc: "Pay on delivery" },
+              { icon: Star, title: "Easy Installation", desc: "Plug & play setup" },
             ].map((usp, i) => (
               <div key={i} className="flex items-center gap-4 bg-surface/50 border border-white/5 rounded-2xl p-5">
                 <usp.icon className="w-6 h-6 text-primary shrink-0" />
@@ -173,7 +173,7 @@ export default async function Home() {
                 <li><Link href="/collections/wings" className="text-xs text-text-muted hover:text-primary transition-colors">Wings</Link></li>
                 <li><Link href="/collections/cars" className="text-xs text-text-muted hover:text-primary transition-colors">Cars</Link></li>
                 <li><Link href="/collections/aesthetic" className="text-xs text-text-muted hover:text-primary transition-colors">Aesthetic</Link></li>
-                <li><Link href="/collections/lifestyle" className="text-xs text-text-muted hover:text-primary transition-colors">Cafe</Link></li>
+                <li><Link href="/collections/cafe" className="text-xs text-text-muted hover:text-primary transition-colors">Cafe</Link></li>
                 <li><Link href="/collections/gaming" className="text-xs text-text-muted hover:text-primary transition-colors">Gaming</Link></li>
               </ul>
             </div>

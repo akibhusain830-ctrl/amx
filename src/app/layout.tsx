@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Outfit, JetBrains_Mono } from "next/font/google";
+import { Inter, Outfit, JetBrains_Mono, Yellowtail } from "next/font/google";
 import "./globals.css";
 import dynamic from "next/dynamic";
 
@@ -23,6 +23,11 @@ const jetbrains = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
 });
+const yellowtail = Yellowtail({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-neon",
+});
 
 export const metadata: Metadata = {
   title: "AMX Signs | Premium High-Energy Neon Art",
@@ -38,7 +43,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${inter.variable} ${outfit.variable} ${jetbrains.variable} bg-black text-white antialiased`}
+        className={`${inter.variable} ${outfit.variable} ${jetbrains.variable} ${yellowtail.variable} bg-black text-white antialiased`}
       >
         {children}
         <CartDrawer />

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ShoppingCart, Menu, Zap, User, LogOut, Package, ChevronDown } from "lucide-react";
+import { ShoppingCart, Menu, Zap, User, LogOut, Package, ChevronDown, X } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import MobileMenu from "./MobileMenu";
 import { supabase } from "@/lib/supabase";
@@ -14,6 +14,7 @@ const Header = () => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [showBanner, setShowBanner] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -24,6 +25,15 @@ const Header = () => {
   const openCart = useCartStore((state) => state.openCart);
 
   useEffect(() => {
+    // Check if user has closed the banner
+    const bannerHidden = localStorage.getItem("amx_banner_hidden");
+    if (!bannerHidden) {
+      setShowBanner(true);
+      document.body.classList.add("has-banner");
+    } else {
+      document.body.classList.remove("has-banner");
+    }
+
     const fetchUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
@@ -71,6 +81,12 @@ const Header = () => {
     router.refresh();
   };
 
+  const handleCloseBanner = () => {
+    setShowBanner(false);
+    document.body.classList.remove("has-banner");
+    localStorage.setItem("amx_banner_hidden", "true");
+  };
+
   const displayName = user?.user_metadata?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "Account";
   const navLinks = [
     { href: "/collections", label: "Shop All", match: "/collections" },
@@ -83,12 +99,32 @@ const Header = () => {
 
   return (
     <>
-      <header className="fixed top-0 left-0 w-full z-50 border-b border-white/10 bg-black/70 backdrop-blur-xl">
+      {/* Announcement Bar */}
+      {showBanner && (
+        <div className="fixed top-0 left-0 w-full z-[60] bg-primary py-2 px-4 shadow-lg flex items-center justify-between">
+          <div className="flex-1 flex justify-center">
+            <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-black text-center animate-pulse">
+              ✨ EXTRA 20% OFF ON YOUR FIRST ORDER — USE CODE: <span className="underline decoration-2 underline-offset-4">FIRSTSIGN</span>
+            </p>
+          </div>
+          <button 
+            onClick={handleCloseBanner}
+            className="text-black/50 hover:text-black transition-colors p-1"
+            aria-label="Close banner"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      <header 
+        className={`fixed left-0 w-full z-50 border-b border-white/10 bg-black/80 backdrop-blur-xl transition-all duration-300 ${
+          showBanner ? "top-[36px]" : "top-0"
+        }`}
+      >
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,transparent_0%,rgba(198,255,0,0.95)_18%,rgba(0,240,255,0.65)_50%,rgba(198,255,0,0.95)_82%,transparent_100%)]" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-10 bg-[radial-gradient(ellipse_at_top,rgba(198,255,0,0.28),transparent_65%)]" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[1px] bg-[linear-gradient(90deg,transparent_0%,rgba(198,255,0,0.55)_50%,transparent_100%)]" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-[radial-gradient(ellipse_at_bottom,rgba(198,255,0,0.18),transparent_68%)]" />
-
+        
         <div className="container mx-auto px-4 md:px-6 h-20 flex items-center justify-between gap-2">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group shrink-0">
@@ -126,7 +162,6 @@ const Header = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-1 md:gap-4 shrink-0">
-            {/* User Menu */}
             {!user ? (
               <Link href="/auth" className="hover:text-primary transition-colors p-2">
                 <User className="w-5 h-5" />
@@ -148,7 +183,6 @@ const Header = () => {
                   <ChevronDown className={`w-3 h-3 text-text-muted transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
                 </button>
 
-                {/* Dropdown */}
                 {userMenuOpen && (
                   <div className="absolute right-0 top-full mt-2 w-52 bg-surface border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50">
                     <div className="px-4 py-3 border-b border-white/5">
@@ -185,7 +219,6 @@ const Header = () => {
               </div>
             )}
 
-            {/* Cart */}
             <button
               className="relative p-2 hover:text-primary transition-colors"
               onClick={openCart}
@@ -199,7 +232,6 @@ const Header = () => {
               )}
             </button>
 
-            {/* Mobile menu */}
             <button
               className="xl:hidden p-2 hover:text-primary transition-colors"
               onClick={() => setMenuOpen(true)}
@@ -208,7 +240,6 @@ const Header = () => {
               <Menu className="w-6 h-6" />
             </button>
 
-            {/* Desktop CTA */}
             <Link
               href="/collections"
               className="hidden xl:block bg-primary text-black px-6 py-2.5 rounded-full font-bold text-xs tracking-widest uppercase hover:scale-105 transition-transform active:scale-95 neon-bloom-lime"

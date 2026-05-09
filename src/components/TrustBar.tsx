@@ -4,7 +4,7 @@ const trustItems = [
   "100% Secure Checkout",
   "Handcrafted in India",
   "Hassle-Free Returns",
-  "COD Available",
+  "Easy Installation",
 ];
 
 const TrustBar = () => {

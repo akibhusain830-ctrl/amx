@@ -130,18 +130,18 @@
     35% {
       opacity: 1;
       text-shadow:
-        0 0 6px rgba(198, 255, 0, 0.95),
-        0 0 14px rgba(198, 255, 0, 0.75),
-        0 0 28px rgba(198, 255, 0, 0.5),
-        0 0 48px rgba(198, 255, 0, 0.35);
+        0 0 2px rgba(198, 255, 0, 0.95),
+        0 0 6px rgba(198, 255, 0, 0.75),
+        0 0 12px rgba(198, 255, 0, 0.5),
+        0 0 20px rgba(198, 255, 0, 0.35);
     }
     100% {
       opacity: 1;
       text-shadow:
-        0 0 8px rgba(198, 255, 0, 0.95),
-        0 0 18px rgba(198, 255, 0, 0.75),
-        0 0 34px rgba(198, 255, 0, 0.55),
-        0 0 62px rgba(198, 255, 0, 0.38);
+        0 0 2px #fff,
+        0 0 10px #fff,
+        0 0 20px rgba(198, 255, 0, 0.8),
+        0 0 40px rgba(198, 255, 0, 0.4);
     }
   }
 
@@ -149,25 +149,30 @@
     0%,
     100% {
       text-shadow:
-        0 0 7px rgba(198, 255, 0, 0.9),
-        0 0 16px rgba(198, 255, 0, 0.7),
-        0 0 32px rgba(198, 255, 0, 0.5);
+        0 0 2px #fff,
+        0 0 8px #fff,
+        0 0 15px rgba(198, 255, 0, 0.7),
+        0 0 30px rgba(198, 255, 0, 0.3);
     }
     50% {
       text-shadow:
-        0 0 9px rgba(198, 255, 0, 1),
-        0 0 22px rgba(198, 255, 0, 0.82),
-        0 0 44px rgba(198, 255, 0, 0.62);
+        0 0 3px #fff,
+        0 0 10px #fff,
+        0 0 25px rgba(198, 255, 0, 0.9),
+        0 0 45px rgba(198, 255, 0, 0.5);
     }
   }
 
   .neon-sign-text {
-    letter-spacing: 0.01em;
-    -webkit-text-stroke: 0.2px rgba(198, 255, 0, 0.85);
+    font-family: var(--font-neon), cursive;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    color: #ffffff !important;
     text-shadow:
-      0 0 7px rgba(198, 255, 0, 0.9),
-      0 0 16px rgba(198, 255, 0, 0.7),
-      0 0 32px rgba(198, 255, 0, 0.5);
+      0 0 2px #fff,
+      0 0 8px #fff,
+      0 0 15px rgba(198, 255, 0, 0.7),
+      0 0 30px rgba(198, 255, 0, 0.3);
   }
 
   .neon-first-ignite {
@@ -184,4 +189,12 @@
       animation: none !important;
     }
   }
+}
+
+/* Banner Layout Helpers */
+body.has-banner {
+  --banner-height: 36px;
+}
+body.has-banner main {
+  margin-top: var(--banner-height);
 }

@@ -14,6 +14,7 @@ type CouponRow = {
   active: boolean;
   starts_at: string | null;
   ends_at: string | null;
+  is_first_order_only: boolean;
 };
 
 const supabase = createClient(
@@ -35,6 +36,8 @@ export async function POST(req: NextRequest) {
 
     const code = typeof codeRaw === "string" ? codeRaw.trim().toUpperCase() : "";
     const subtotal = typeof subtotalRaw === "number" ? subtotalRaw : NaN;
+    const email = typeof (body as { email?: unknown })?.email === "string" ? (body as { email?: string }).email?.trim().toLowerCase() : "";
+
     if (!code || !Number.isFinite(subtotal) || subtotal <= 0) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }
@@ -64,6 +67,24 @@ export async function POST(req: NextRequest) {
     }
     if (coupon.usage_limit && (coupon.used_count || 0) >= coupon.usage_limit) {
       return NextResponse.json({ valid: false, error: "Coupon usage limit reached" }, { status: 400 });
+    }
+
+    // Check for First Order Only
+    if (coupon.is_first_order_only) {
+      if (!email) {
+        return NextResponse.json({ valid: false, error: "Please enter your email to use this coupon" }, { status: 400 });
+      }
+
+      const { count, error: countError } = await supabase
+        .from("orders")
+        .select("*", { count: "exact", head: true })
+        .eq("customer_email", email);
+
+      if (countError) {
+        console.error("Order count check failed:", countError);
+      } else if (count && count > 0) {
+        return NextResponse.json({ valid: false, error: "This coupon is only for your first order" }, { status: 400 });
+      }
     }
 
     const rawDiscount = coupon.type === "percentage" ? (subtotal * coupon.value) / 100 : coupon.value;

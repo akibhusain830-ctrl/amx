@@ -27,7 +27,7 @@ const ProductCard = React.memo(({ product }: ProductCardProps) => {
   return (
     <div className="group h-full flex flex-col bg-surface border border-white/5 rounded-2xl p-2 sm:p-3 transition-transform duration-300 hover:-translate-y-1 hover:border-primary/20">
       <Link href={`/products/${product.slug}`} className="block relative">
-        <div className="relative aspect-[9/10] sm:aspect-square rounded-xl overflow-hidden bg-black border border-white/5 transition-all duration-500 mb-4 flex items-center justify-center">
+        <div className="relative aspect-[4/5] rounded-xl overflow-hidden bg-black border border-white/5 transition-all duration-500 mb-4 flex items-center justify-center">
           {/* Product Image or Room Mockup Placeholder */}
           {product.image_url ? (
             <Image 
@@ -58,7 +58,7 @@ const ProductCard = React.memo(({ product }: ProductCardProps) => {
 
           {/* Badge */}
           {product.badge && (
-            <div className="absolute top-3 left-3 bg-primary text-black text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-lg">
+            <div className="absolute top-2 left-2 bg-primary text-black text-[7px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full shadow-lg">
               {product.badge}
             </div>
           )}
@@ -95,11 +95,6 @@ const ProductCard = React.memo(({ product }: ProductCardProps) => {
               <span className="text-[9px] font-mono text-primary uppercase tracking-[0.2em]">
                 {product.category}
               </span>
-              <div className="flex items-center gap-0.5">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className={`w-2.5 h-2.5 ${i < Math.floor(product.rating) ? 'text-primary fill-current' : 'text-white/20'}`} />
-                ))}
-              </div>
             </div>
             <h3 className="text-sm font-black uppercase tracking-tight group-hover:text-primary transition-colors line-clamp-2 min-h-[40px] leading-tight">
               {product.title}
