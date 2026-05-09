@@ -9,7 +9,7 @@ export const CATEGORY_CONFIG: CategoryConfig[] = [
   { label: "Gaming", slug: "gaming", dbValue: "Gaming" },
   { label: "Wings", slug: "wings", dbValue: "Wings" },
   { label: "Cars", slug: "cars", dbValue: "Cars" },
-  { label: "F1", slug: "f1", dbValue: "F1" },
+  { label: "Aesthetic", slug: "aesthetic", dbValue: "Aesthetic" },
 ];
 
 export const CATEGORY_BY_SLUG = new Map(

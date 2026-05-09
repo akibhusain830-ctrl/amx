@@ -46,8 +46,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     return (
       <main className="min-h-screen bg-black selection:bg-primary/30 selection:text-primary">
         <Header />
-        <div className="pt-28 pb-24 container mx-auto px-6">
-          <div className="mb-12">
+        <div className="pt-28 pb-24 container mx-auto px-4 sm:px-6">
+          <div className="mb-6 md:mb-12">
             <span className="text-primary font-mono text-xs uppercase tracking-[0.3em] mb-4 block">
               Collection
             </span>
@@ -75,8 +75,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   return (
     <main className="min-h-screen bg-black selection:bg-primary/30 selection:text-primary">
       <Header />
-      <div className="pt-28 pb-24 container mx-auto px-6">
-        <div className="mb-12">
+      <div className="pt-28 pb-24 container mx-auto px-4 sm:px-6">
+        <div className="mb-6 md:mb-12">
           <span className="text-primary font-mono text-xs uppercase tracking-[0.3em] mb-4 block">
             Collection
           </span>
@@ -89,7 +89,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-6 sm:gap-x-8 sm:gap-y-16">
           {categoryProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

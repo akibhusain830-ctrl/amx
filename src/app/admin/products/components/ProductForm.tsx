@@ -256,12 +256,12 @@ export default function ProductForm({ product }: ProductFormProps) {
             className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer"
           >
             <option value="" disabled>Select a category...</option>
+            <option value="Shop All">Shop All</option>
             <option value="Cars">Cars</option>
-            <option value="F1">F1</option>
+            <option value="Aesthetic">Aesthetic</option>
             <option value="Wings">Wings</option>
             <option value="Lifestyle">Cafe</option>
             <option value="Gaming">Gaming</option>
-            <option value="Custom">Custom (Other)</option>
           </select>
         </div>
 

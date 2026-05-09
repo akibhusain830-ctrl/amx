@@ -78,7 +78,7 @@ const Header = () => {
     { href: "/collections/gaming", label: "Gaming", match: "/collections/gaming" },
     { href: "/collections/wings", label: "Wings", match: "/collections/wings" },
     { href: "/collections/cars", label: "Cars", match: "/collections/cars" },
-    { href: "/collections/f1", label: "F1", match: "/collections/f1" },
+    { href: "/collections/aesthetic", label: "Aesthetic", match: "/collections/aesthetic" },
   ];
 
   return (
@@ -89,20 +89,20 @@ const Header = () => {
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[1px] bg-[linear-gradient(90deg,transparent_0%,rgba(198,255,0,0.55)_50%,transparent_100%)]" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-[radial-gradient(ellipse_at_bottom,rgba(198,255,0,0.18),transparent_68%)]" />
 
-        <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="container mx-auto px-4 md:px-6 h-20 flex items-center justify-between gap-2">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center neon-bloom-lime transition-transform group-hover:scale-110">
-              <Zap className="text-black w-6 h-6 fill-current" />
+          <Link href="/" className="flex items-center gap-2 group shrink-0">
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-primary rounded-full flex items-center justify-center neon-bloom-lime transition-transform group-hover:scale-110">
+              <Zap className="text-black w-4 h-4 md:w-6 md:h-6 fill-current" />
             </div>
-            <span className="text-2xl font-black tracking-tighter font-outfit uppercase">
+            <span className="text-xl md:text-2xl font-black tracking-tighter font-outfit uppercase">
               AMX<span className="text-primary">Signs</span>
             </span>
           </Link>
 
           {/* Navigation */}
           <nav
-            className="hidden md:flex items-center gap-1 text-sm font-medium tracking-widest uppercase rounded-full border border-white/10 bg-white/[0.03] px-2 py-1.5"
+            className="hidden xl:flex items-center gap-1 text-sm font-medium tracking-widest uppercase rounded-full border border-white/10 bg-white/[0.03] px-2 py-1.5"
             aria-label="Main navigation"
           >
             {navLinks.map((link) => {
@@ -125,7 +125,7 @@ const Header = () => {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1 md:gap-4 shrink-0">
             {/* User Menu */}
             {!user ? (
               <Link href="/auth" className="hover:text-primary transition-colors p-2">
@@ -142,7 +142,7 @@ const Header = () => {
                       {displayName[0]}
                     </span>
                   </div>
-                  <span className="hidden lg:block text-xs font-bold uppercase tracking-wider max-w-[80px] truncate">
+                  <span className="hidden xl:block text-xs font-bold uppercase tracking-wider max-w-[80px] truncate">
                     {displayName}
                   </span>
                   <ChevronDown className={`w-3 h-3 text-text-muted transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
@@ -201,7 +201,7 @@ const Header = () => {
 
             {/* Mobile menu */}
             <button
-              className="md:hidden p-2 hover:text-primary transition-colors"
+              className="xl:hidden p-2 hover:text-primary transition-colors"
               onClick={() => setMenuOpen(true)}
               aria-label="Open menu"
             >
@@ -211,7 +211,7 @@ const Header = () => {
             {/* Desktop CTA */}
             <Link
               href="/collections"
-              className="hidden md:block bg-primary text-black px-6 py-2.5 rounded-full font-bold text-xs tracking-widest uppercase hover:scale-105 transition-transform active:scale-95 neon-bloom-lime"
+              className="hidden xl:block bg-primary text-black px-6 py-2.5 rounded-full font-bold text-xs tracking-widest uppercase hover:scale-105 transition-transform active:scale-95 neon-bloom-lime"
             >
               Shop Now
             </Link>

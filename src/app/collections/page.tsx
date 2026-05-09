@@ -57,9 +57,9 @@ export default function CollectionsPage() {
   return (
     <main className="min-h-screen bg-black selection:bg-primary/30 selection:text-primary">
       <Header />
-      <div className="pt-28 pb-24 container mx-auto px-6">
+      <div className="pt-28 pb-24 container mx-auto px-4 sm:px-6">
         {/* Header Section */}
-        <div className="mb-12">
+        <div className="mb-6 md:mb-12">
           <span className="text-primary font-mono text-xs uppercase tracking-[0.3em] mb-4 block">
             Catalogue
           </span>
@@ -69,7 +69,7 @@ export default function CollectionsPage() {
         </div>
 
         {/* Filters Toolbar */}
-        <div className="mb-12 flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between border-y border-white/5 py-6">
+        <div className="mb-6 md:mb-12 flex flex-col lg:flex-row gap-6 items-start lg:items-center justify-between border-y border-white/5 py-4 md:py-6">
           {/* Search */}
           <div className="relative w-full lg:w-96">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
@@ -123,7 +123,7 @@ export default function CollectionsPage() {
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-6 sm:gap-x-6 sm:gap-y-12">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-6 sm:gap-x-6 sm:gap-y-12">
             {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

@@ -67,7 +67,7 @@ export default async function Home() {
               { title: "Gaming", count: `${categoryMap["Gaming"] || 0} Designs`, image: products.find(p => p.category === "Gaming")?.image_url, href: "/collections/gaming" },
               { title: "Wings", count: `${categoryMap["Wings"] || 0} Designs`, image: products.find(p => p.category === "Wings")?.image_url, href: "/collections/wings" },
               { title: "Cars", count: `${categoryMap["Cars"] || 0} Designs`, image: products.find(p => p.category === "Cars")?.image_url, href: "/collections/cars" },
-              { title: "F1", count: `${categoryMap["F1"] || 0} Designs`, image: products.find(p => p.category === "F1")?.image_url, href: "/collections/f1" },
+              { title: "Aesthetic", count: `${categoryMap["Aesthetic"] || 0} Designs`, image: products.find(p => p.category === "Aesthetic")?.image_url, href: "/collections/aesthetic" },
             ].map((cat, i) => (
               <Link
                 key={i}
@@ -101,7 +101,7 @@ export default async function Home() {
       </section>
 
       {/* Trending Products */}
-      <section className="py-10 md:py-12 container mx-auto px-6" aria-labelledby="trending-heading">
+      <section className="py-10 md:py-12 container mx-auto px-4 sm:px-6" aria-labelledby="trending-heading">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-10 gap-6">
           <div>
             <span className="text-primary font-mono text-xs uppercase tracking-[0.3em] mb-4 block">Hottest Picks</span>
@@ -113,7 +113,7 @@ export default async function Home() {
             View All Products
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-6 sm:gap-x-8 sm:gap-y-16">
           {trending.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
@@ -172,7 +172,7 @@ export default async function Home() {
                 <li><Link href="/collections" className="text-xs text-text-muted hover:text-primary transition-colors">All Products</Link></li>
                 <li><Link href="/collections/wings" className="text-xs text-text-muted hover:text-primary transition-colors">Wings</Link></li>
                 <li><Link href="/collections/cars" className="text-xs text-text-muted hover:text-primary transition-colors">Cars</Link></li>
-                <li><Link href="/collections/f1" className="text-xs text-text-muted hover:text-primary transition-colors">F1</Link></li>
+                <li><Link href="/collections/aesthetic" className="text-xs text-text-muted hover:text-primary transition-colors">Aesthetic</Link></li>
                 <li><Link href="/collections/lifestyle" className="text-xs text-text-muted hover:text-primary transition-colors">Cafe</Link></li>
                 <li><Link href="/collections/gaming" className="text-xs text-text-muted hover:text-primary transition-colors">Gaming</Link></li>
               </ul>
