@@ -12,11 +12,11 @@ interface MobileMenuProps {
 
 const navLinks = [
   { href: "/collections", label: "Shop All" },
-  { href: "/customizer", label: "Customise" },
+  { href: "/collections/gaming", label: "Gaming" },
   { href: "/collections/wings", label: "Wings" },
   { href: "/collections/cars", label: "Cars" },
   { href: "/collections/f1", label: "F1" },
-  { href: "/collections/lifestyle", label: "Lifestyle" },
+  { href: "/collections/lifestyle", label: "Cafe" },
 ];
 
 const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
@@ -91,11 +91,11 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
 
             <div className="p-6 border-t border-white/10">
               <Link
-                href="/customizer"
+                href="/collections"
                 onClick={onClose}
                 className="block w-full bg-primary text-black py-4 rounded-full font-black text-xs tracking-[0.2em] uppercase text-center hover:scale-[1.02] transition-transform active:scale-95 neon-bloom-lime"
               >
-                Design Your Own
+                Shop Now
               </Link>
             </div>
           </motion.div>

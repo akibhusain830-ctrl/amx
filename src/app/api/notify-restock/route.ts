@@ -1,11 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { isRateLimited } from "@/lib/rate-limit";
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, productId } = await req.json();
-    if (!email || !productId) {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
+    if (isRateLimited(`restock:${ip}`, 10, 60_000)) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+
+    const body: unknown = await req.json();
+    const emailRaw = typeof body === "object" && body !== null ? (body as { email?: unknown }).email : undefined;
+    const productIdRaw =
+      typeof body === "object" && body !== null ? (body as { productId?: unknown }).productId : undefined;
+
+    const email = typeof emailRaw === "string" ? emailRaw.trim().toLowerCase() : "";
+    const productId = typeof productIdRaw === "string" ? productIdRaw.trim() : "";
+
+    if (!EMAIL_RE.test(email) || !productId) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
@@ -18,9 +33,7 @@ export async function POST(req: NextRequest) {
           getAll() {
             return cookieStore.getAll();
           },
-          setAll(cookiesToSet) {
-            // Read-only in this context
-          },
+          setAll() {},
         },
       }
     );
@@ -32,8 +45,9 @@ export async function POST(req: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Restock notification error:", error);
     return NextResponse.json({ error: "Failed to submit request" }, { status: 500 });
   }
 }
+

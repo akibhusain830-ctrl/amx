@@ -273,21 +273,16 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2 mb-6">
-              <span className="bg-accent-mint/20 text-accent-mint text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full flex items-center gap-1">
-                <Truck className="w-3 h-3" />
-                Free Shipping
-              </span>
-              <span className="text-[10px] font-mono text-text-muted">Fast Dispatch</span>
-              {product.original_price && (
-                <span className="text-[10px] font-black bg-primary text-black px-2 py-1 rounded-full uppercase tracking-wider">
-                  EXTRA 20% OFF AT CHECKOUT
+            {product.original_price && (
+              <div className="mb-6">
+                <span className="inline-flex text-[10px] font-black bg-primary text-black px-3 py-1.5 rounded-full uppercase tracking-wider">
+                  EXTRA 20% OFF - USE COUPON FIRSTSIGN
                 </span>
-              )}
-            </div>
+              </div>
+            )}
 
-            <p className="text-text-muted leading-relaxed mb-8 max-w-lg">
-              {product.description}
+            <p className="text-white/80 text-sm leading-relaxed mb-8 max-w-lg">
+              Product color may slightly vary from the images due to the difference in lighting.
             </p>
 
             {/* Size Selector */}
@@ -295,7 +290,7 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-mono uppercase tracking-widest text-text-muted">Size</span>
                 <span className="text-[10px] font-mono text-primary">
-                  {currentVariant.dimensions?.replace(/""+/g, '"') || ""}
+                  {(currentVariant.dimensions?.replace(/""+/g, '"') || "") + " inches"}
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2">
@@ -397,7 +392,7 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
 
         {/* Tabbed Content */}
         <div className="mt-20">
-          <div className="flex gap-6 border-b border-white/10 mb-8 overflow-x-auto">
+          <div className="flex gap-4 border-b border-white/10 mb-6 overflow-x-auto scrollbar-hide">
             {[
               { id: "details", label: "Product Details", icon: Info },
               { id: "box", label: "In The Box", icon: Package },
@@ -407,10 +402,11 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`flex items-center gap-2 pb-4 text-xs font-black uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap ${activeTab === tab.id
+                className={`flex items-center gap-2 pb-3 text-[11px] font-black uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap ${
+                  activeTab === tab.id
                     ? "border-primary text-primary"
                     : "border-transparent text-text-muted hover:text-white"
-                  }`}
+                }`}
               >
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
@@ -421,13 +417,19 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
           <AnimatePresence mode="wait">
             {activeTab === "details" && (
               <motion.div key="details" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                <h3 className="text-lg font-black uppercase tracking-tight mb-4">About This Sign</h3>
-                <p className="text-text-muted leading-relaxed max-w-3xl">{product.description}</p>
-                <div className="grid sm:grid-cols-2 gap-4 mt-8">
+                <div className="rounded-2xl border border-white/10 bg-surface/70 p-5 md:p-6 mb-5">
+                  <p className="text-primary font-mono text-[10px] uppercase tracking-[0.3em] mb-2">Product Details</p>
+                  <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight mb-3">About This Sign</h3>
+                  <p className="text-text-muted leading-relaxed text-base md:text-lg max-w-3xl">{product.description}</p>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-3 md:gap-4">
                   {product.features.map((f, i) => (
-                    <div key={i} className="flex items-center gap-3 bg-surface border border-white/5 rounded-xl p-4">
-                      <Check className="w-4 h-4 text-primary shrink-0" />
-                      <span className="text-sm text-text-muted">{f}</span>
+                    <div key={i} className="flex items-center gap-3 bg-surface border border-white/10 rounded-xl p-4 hover:border-primary/30 transition-colors">
+                      <div className="w-6 h-6 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center shrink-0">
+                        <Check className="w-3.5 h-3.5 text-primary" />
+                      </div>
+                      <span className="text-sm md:text-base text-white/90">{f}</span>
                     </div>
                   ))}
                 </div>
@@ -481,7 +483,7 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                   { q: "Can I use it outdoors?", a: "Indoor use is recommended. For outdoor use, add our Waterproof IP67 add-on at checkout." },
                   { q: "What's the return policy?", a: "7-day no-questions return. If the sign arrives damaged, we replace it free — no return needed." },
                   { q: "How long does shipping take?", a: "We provide fast dispatch. Metro cities: 3-5 days. Others: 5-8 days." },
-                  { q: "Can I customise the text?", a: "Absolutely. Head to our Customiser to design your own text, font, and color." },
+                  { q: "Can I customise the text?", a: "Absolutely. Contact us with your idea and our team will help craft a custom neon design for you." },
                 ].map((faq, i) => (
                   <div key={i} className="bg-surface border border-white/5 rounded-xl p-5">
                     <h4 className="text-sm font-black uppercase tracking-wide mb-2">{faq.q}</h4>

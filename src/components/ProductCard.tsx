@@ -25,9 +25,9 @@ const ProductCard = React.memo(({ product }: ProductCardProps) => {
   };
 
   return (
-    <div className="group h-full flex flex-col bg-surface border border-white/5 rounded-2xl p-3 transition-transform duration-300 hover:-translate-y-1 hover:border-primary/20">
+    <div className="group h-full flex flex-col bg-surface border border-white/5 rounded-2xl p-3.5 sm:p-3 transition-transform duration-300 hover:-translate-y-1 hover:border-primary/20">
       <Link href={`/products/${product.slug}`} className="block relative">
-        <div className="relative aspect-square rounded-xl overflow-hidden bg-black border border-white/5 transition-all duration-500 mb-4 flex items-center justify-center">
+        <div className="relative aspect-[9/10] sm:aspect-square rounded-xl overflow-hidden bg-black border border-white/5 transition-all duration-500 mb-4 flex items-center justify-center">
           {/* Product Image or Room Mockup Placeholder */}
           {product.image_url ? (
             <Image 

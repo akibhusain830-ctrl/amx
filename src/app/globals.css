@@ -65,4 +65,123 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  @keyframes neon-flicker {
+    0%, 18%, 22%, 24%, 56%, 100% {
+      opacity: 1;
+      filter: drop-shadow(0 0 6px rgba(198, 255, 0, 0.65))
+        drop-shadow(0 0 16px rgba(198, 255, 0, 0.45))
+        drop-shadow(0 0 34px rgba(198, 255, 0, 0.3));
+    }
+    20%, 23% {
+      opacity: 0.28;
+      filter: drop-shadow(0 0 2px rgba(198, 255, 0, 0.3));
+    }
+    57% {
+      opacity: 0.5;
+      filter: drop-shadow(0 0 3px rgba(198, 255, 0, 0.38));
+    }
+    58% {
+      opacity: 0.2;
+      filter: none;
+    }
+    59% {
+      opacity: 0.85;
+      filter: drop-shadow(0 0 10px rgba(198, 255, 0, 0.55));
+    }
+  }
+
+  @keyframes neon-halo {
+    0%, 18%, 22%, 24%, 56%, 100% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    20%, 23%, 58% {
+      opacity: 0.14;
+      transform: scale(0.95);
+    }
+    59% {
+      opacity: 0.5;
+      transform: scale(1.05);
+    }
+  }
+
+  .neon-flicker {
+    animation: neon-flicker 2.8s linear infinite;
+  }
+
+  .neon-halo {
+    animation: neon-halo 2.8s linear infinite;
+  }
+
+  @keyframes neon-first-ignite {
+    0%,
+    8%,
+    14%,
+    20%,
+    26% {
+      opacity: 0.1;
+      text-shadow: none;
+      filter: none;
+    }
+    10%,
+    18%,
+    24%,
+    35% {
+      opacity: 1;
+      text-shadow:
+        0 0 6px rgba(198, 255, 0, 0.95),
+        0 0 14px rgba(198, 255, 0, 0.75),
+        0 0 28px rgba(198, 255, 0, 0.5),
+        0 0 48px rgba(198, 255, 0, 0.35);
+    }
+    100% {
+      opacity: 1;
+      text-shadow:
+        0 0 8px rgba(198, 255, 0, 0.95),
+        0 0 18px rgba(198, 255, 0, 0.75),
+        0 0 34px rgba(198, 255, 0, 0.55),
+        0 0 62px rgba(198, 255, 0, 0.38);
+    }
+  }
+
+  @keyframes neon-soft-breathe {
+    0%,
+    100% {
+      text-shadow:
+        0 0 7px rgba(198, 255, 0, 0.9),
+        0 0 16px rgba(198, 255, 0, 0.7),
+        0 0 32px rgba(198, 255, 0, 0.5);
+    }
+    50% {
+      text-shadow:
+        0 0 9px rgba(198, 255, 0, 1),
+        0 0 22px rgba(198, 255, 0, 0.82),
+        0 0 44px rgba(198, 255, 0, 0.62);
+    }
+  }
+
+  .neon-sign-text {
+    letter-spacing: 0.01em;
+    -webkit-text-stroke: 0.2px rgba(198, 255, 0, 0.85);
+    text-shadow:
+      0 0 7px rgba(198, 255, 0, 0.9),
+      0 0 16px rgba(198, 255, 0, 0.7),
+      0 0 32px rgba(198, 255, 0, 0.5);
+  }
+
+  .neon-first-ignite {
+    animation: neon-first-ignite 1700ms ease-out 1 forwards;
+  }
+
+  .neon-steady-glow {
+    animation: neon-soft-breathe 3.4s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .neon-first-ignite,
+    .neon-steady-glow {
+      animation: none !important;
+    }
+  }
 }

@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { formatPrice } from '@/lib/utils'
-import { MessageSquare, Calendar, User, Mail, Phone, Maximize2 } from 'lucide-react'
+import { MessageSquare, Calendar, Mail, Phone, Maximize2 } from 'lucide-react'
 import QuoteStatusSelect from './components/QuoteStatusSelect'
 
 export default async function AdminQuotes() {

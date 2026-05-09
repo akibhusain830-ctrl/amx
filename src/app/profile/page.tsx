@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import {
   Zap,
   Package,
@@ -115,7 +114,7 @@ export default function ProfilePage() {
               <div className="bg-surface border border-white/5 rounded-2xl overflow-hidden p-3">
                 {[
                   { icon: Package, label: "My Orders", active: true },
-                  { icon: Heart, label: "Saved Designs", href: "/customizer" },
+                  { icon: Heart, label: "Saved Designs", href: "/collections" },
                   { icon: Settings, label: "Account Details" },
                 ].map((item, i) => (
                   <Link

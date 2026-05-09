@@ -2,19 +2,21 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ShoppingCart, Menu, Zap, Palette, User, LogOut, Package, ChevronDown } from "lucide-react";
+import { ShoppingCart, Menu, Zap, User, LogOut, Package, ChevronDown } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import MobileMenu from "./MobileMenu";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   const totalItems = useCartStore((state) =>
     state.items.reduce((sum, item) => sum + item.quantity, 0)
@@ -70,10 +72,23 @@ const Header = () => {
   };
 
   const displayName = user?.user_metadata?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "Account";
+  const navLinks = [
+    { href: "/collections", label: "Shop All", match: "/collections" },
+    { href: "/collections/lifestyle", label: "Cafe", match: "/collections/lifestyle" },
+    { href: "/collections/gaming", label: "Gaming", match: "/collections/gaming" },
+    { href: "/collections/wings", label: "Wings", match: "/collections/wings" },
+    { href: "/collections/cars", label: "Cars", match: "/collections/cars" },
+    { href: "/collections/f1", label: "F1", match: "/collections/f1" },
+  ];
 
   return (
     <>
-      <header className="fixed top-0 left-0 w-full z-50 glass">
+      <header className="fixed top-0 left-0 w-full z-50 border-b border-white/10 bg-black/70 backdrop-blur-xl">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,transparent_0%,rgba(198,255,0,0.95)_18%,rgba(0,240,255,0.65)_50%,rgba(198,255,0,0.95)_82%,transparent_100%)]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-10 bg-[radial-gradient(ellipse_at_top,rgba(198,255,0,0.28),transparent_65%)]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[1px] bg-[linear-gradient(90deg,transparent_0%,rgba(198,255,0,0.55)_50%,transparent_100%)]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-[radial-gradient(ellipse_at_bottom,rgba(198,255,0,0.18),transparent_68%)]" />
+
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
@@ -86,15 +101,27 @@ const Header = () => {
           </Link>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium tracking-widest uppercase" aria-label="Main navigation">
-            <Link href="/collections" className="hover:text-primary transition-colors">Shop All</Link>
-            <Link href="/customizer" className="hover:text-primary transition-colors">Customise</Link>
-            {isAdmin && (
-              <Link href="/admin" className="text-primary font-black animate-pulse">Admin</Link>
-            )}
-            <Link href="/collections/wings" className="hover:text-primary transition-colors">Wings</Link>
-            <Link href="/collections/cars" className="hover:text-primary transition-colors">Cars</Link>
-            <Link href="/collections/f1" className="hover:text-primary transition-colors">F1</Link>
+          <nav
+            className="hidden md:flex items-center gap-1 text-sm font-medium tracking-widest uppercase rounded-full border border-white/10 bg-white/[0.03] px-2 py-1.5"
+            aria-label="Main navigation"
+          >
+            {navLinks.map((link) => {
+              const isActive = pathname === link.match || (link.match === "/collections" && pathname === "/collections");
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`relative px-4 py-2 rounded-full transition-all ${
+                    isActive
+                      ? "text-primary bg-primary/10 shadow-[0_0_16px_rgba(198,255,0,0.25)]"
+                      : "text-white hover:text-primary"
+                  }`}
+                >
+                  {link.label}
+                  {isActive && <span className="absolute left-3 right-3 -bottom-0.5 h-[2px] rounded-full bg-primary shadow-[0_0_12px_rgba(198,255,0,0.9)]" />}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Actions */}
@@ -183,10 +210,10 @@ const Header = () => {
 
             {/* Desktop CTA */}
             <Link
-              href="/customizer"
+              href="/collections"
               className="hidden md:block bg-primary text-black px-6 py-2.5 rounded-full font-bold text-xs tracking-widest uppercase hover:scale-105 transition-transform active:scale-95 neon-bloom-lime"
             >
-              Design Your Own
+              Shop Now
             </Link>
           </div>
         </div>

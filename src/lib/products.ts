@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { createClient } from "@supabase/supabase-js";
 
 export interface Product {
   id: string;
@@ -22,6 +22,11 @@ export interface Product {
     large: { dimensions: string; price: number; original_price?: number };
   };
 }
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export const getProducts = async (limit?: number): Promise<Product[]> => {
   let query = supabase

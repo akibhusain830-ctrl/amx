@@ -1,9 +1,16 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { formatPrice } from '@/lib/utils'
-import { ExternalLink, ShoppingBag } from 'lucide-react'
+import { ShoppingBag } from 'lucide-react'
 import Link from 'next/link'
 import OrderStatusSelect from './components/OrderStatusSelect'
+
+type OrderItemView = {
+  products?: {
+    image_url?: string
+    title?: string
+  }
+}
 
 export default async function AdminOrders() {
   const cookieStore = cookies()
@@ -37,9 +44,9 @@ export default async function AdminOrders() {
         <p className="text-text-muted text-sm">Review and process incoming customer orders.</p>
       </div>
 
-      <div className="bg-surface border border-white/5 rounded-2xl overflow-hidden">
+      <div className="bg-surface border border-white/5 rounded-2xl">
         <table className="w-full text-left">
-          <thead className="bg-white/5 border-b border-white/10">
+          <thead className="bg-white/5 border-b border-white/10 [&>tr>th:first-child]:rounded-tl-2xl [&>tr>th:last-child]:rounded-tr-2xl">
             <tr>
               <th className="px-6 py-4 text-[10px] font-mono uppercase tracking-[0.2em] text-text-muted">Order ID</th>
               <th className="px-6 py-4 text-[10px] font-mono uppercase tracking-[0.2em] text-text-muted">Customer</th>
@@ -61,7 +68,7 @@ export default async function AdminOrders() {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex -space-x-2">
-                    {order.order_items.map((item: any, i: number) => (
+                    {order.order_items.map((item: OrderItemView, i: number) => (
                       <div key={i} className="w-8 h-8 rounded-lg bg-surface border border-white/10 flex items-center justify-center overflow-hidden relative z-10 hover:z-20 transition-all hover:-translate-y-1">
                         {item.products?.image_url ? (
                           <img src={item.products.image_url} alt={item.products?.title || "Product"} className="w-full h-full object-cover" />

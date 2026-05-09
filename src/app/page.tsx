@@ -4,7 +4,7 @@ import AnnouncementBar from "@/components/AnnouncementBar";
 import Hero from "@/components/Hero";
 import TrustBar from "@/components/TrustBar";
 import ProductCard from "@/components/ProductCard";
-import { getProducts, getAllCategories } from "@/lib/products";
+import { getProducts } from "@/lib/products";
 import { ArrowRight, Star, ShieldCheck, Truck, Zap, Mail, MapPin, Phone, Camera, Play } from "lucide-react";
 import Link from "next/link";
 import NewsletterForm from "@/components/NewsletterForm";
@@ -26,11 +26,11 @@ export default async function Home() {
     <main className="min-h-screen bg-black selection:bg-primary/30 selection:text-primary">
       <AnnouncementBar />
       <Header />
-      <Hero products={products} />
+      <Hero />
       <TrustBar />
 
       {/* USP Grid */}
-      <section className="py-24 border-b border-white/5">
+      <section className="py-12 md:py-14 border-b border-white/5">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 min-[360px]:grid-cols-2 md:grid-cols-4 gap-6">
             {[
@@ -52,13 +52,19 @@ export default async function Home() {
       </section>
 
       {/* Category Pulse — dynamic counts */}
-      <section className="py-24 border-b border-white/5" aria-labelledby="category-heading">
+      <section className="py-10 md:py-12 border-b border-white/5" aria-labelledby="category-heading">
         <div className="container mx-auto px-6">
-          <h2 id="category-heading" className="sr-only">Shop by Category</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          <div className="mb-6 md:mb-8">
+            <span className="text-primary font-mono text-xs uppercase tracking-[0.3em] mb-3 block">Explore</span>
+            <h2 id="category-heading" className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
+              Categories
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {[
               { title: "Shop All", count: `${totalCount} Designs`, image: products[0]?.image_url, href: "/collections" },
-              { title: "Customise", count: "Your Design", image: undefined, href: "/customizer" },
+              { title: "Cafe", count: `${categoryMap["Lifestyle"] || 0} Designs`, image: products.find(p => p.category === "Lifestyle")?.image_url, href: "/collections/lifestyle" },
+              { title: "Gaming", count: `${categoryMap["Gaming"] || 0} Designs`, image: products.find(p => p.category === "Gaming")?.image_url, href: "/collections/gaming" },
               { title: "Wings", count: `${categoryMap["Wings"] || 0} Designs`, image: products.find(p => p.category === "Wings")?.image_url, href: "/collections/wings" },
               { title: "Cars", count: `${categoryMap["Cars"] || 0} Designs`, image: products.find(p => p.category === "Cars")?.image_url, href: "/collections/cars" },
               { title: "F1", count: `${categoryMap["F1"] || 0} Designs`, image: products.find(p => p.category === "F1")?.image_url, href: "/collections/f1" },
@@ -95,8 +101,8 @@ export default async function Home() {
       </section>
 
       {/* Trending Products */}
-      <section className="py-24 container mx-auto px-6" aria-labelledby="trending-heading">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+      <section className="py-10 md:py-12 container mx-auto px-6" aria-labelledby="trending-heading">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-10 gap-6">
           <div>
             <span className="text-primary font-mono text-xs uppercase tracking-[0.3em] mb-4 block">Hottest Picks</span>
             <h2 id="trending-heading" className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
@@ -167,7 +173,8 @@ export default async function Home() {
                 <li><Link href="/collections/wings" className="text-xs text-text-muted hover:text-primary transition-colors">Wings</Link></li>
                 <li><Link href="/collections/cars" className="text-xs text-text-muted hover:text-primary transition-colors">Cars</Link></li>
                 <li><Link href="/collections/f1" className="text-xs text-text-muted hover:text-primary transition-colors">F1</Link></li>
-                <li><Link href="/customizer" className="text-xs text-text-muted hover:text-primary transition-colors">Custom Design</Link></li>
+                <li><Link href="/collections/lifestyle" className="text-xs text-text-muted hover:text-primary transition-colors">Cafe</Link></li>
+                <li><Link href="/collections/gaming" className="text-xs text-text-muted hover:text-primary transition-colors">Gaming</Link></li>
               </ul>
             </div>
 

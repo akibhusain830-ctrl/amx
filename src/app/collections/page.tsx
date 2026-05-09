@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Filter, SlidersHorizontal, Grid2X2, LayoutList } from "lucide-react";
+import { Search, SlidersHorizontal } from "lucide-react";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
 import { Product, getProducts } from "@/lib/products";

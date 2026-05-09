@@ -1,142 +1,224 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft,
-  CreditCard,
-  MapPin,
-  User,
-  Phone,
-  Mail,
-  ShoppingBag,
-  Check,
-  Loader2,
+  ShoppingBag, Ticket, Check, X, Loader2, ChevronRight,
+  Truck, ShieldCheck, Zap, ArrowLeft, Tag,
 } from "lucide-react";
-import Header from "@/components/Header";
 import { useCartStore } from "@/store/cartStore";
 import { formatPrice } from "@/lib/utils";
-import { supabase } from "@/lib/supabase";
+import Header from "@/components/Header";
+
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Razorpay: any;
+  }
+}
+
+type CouponResult = {
+  id: string;
+  code: string;
+  type: "percentage" | "fixed";
+  value: number;
+  discount: number;
+  finalTotal: number;
+};
+
+type FormData = {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+};
+
+const emptyForm: FormData = {
+  name: "", email: "", phone: "",
+  address: "", city: "", state: "", pincode: "",
+};
 
 export default function CheckoutPage() {
+  const router = useRouter();
   const { items, getTotalPrice, clearCart } = useCartStore();
-  const [step, setStep] = useState<"details" | "payment" | "success">(
-    "details"
-  );
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    address: "",
-  });
+  const subtotal = getTotalPrice();
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const [form, setForm] = useState<FormData>(emptyForm);
+  const [couponInput, setCouponInput] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<CouponResult | null>(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState<string | null>(null);
+
+  const discount = appliedCoupon?.discount ?? 0;
+  const finalTotal = subtotal - discount;
+
+  // Load Razorpay script
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => { document.body.removeChild(script); };
+  }, []);
+
+  // Redirect if cart is empty
+  useEffect(() => {
+    if (items.length === 0 && !orderSuccess) router.replace("/collections");
+  }, [items.length, orderSuccess, router]);
+
+  const handleField = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   };
 
-  const handlePlaceOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const applyCoupon = useCallback(async () => {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    setCouponLoading(true);
+    setCouponError(null);
+    setAppliedCoupon(null);
 
     try {
-      const itemsPayload = items.map((item) => ({
-        productId: item.product.id,
-        quantity: item.quantity,
-        selectedSize: item.selectedSize,
-      }));
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, subtotal }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.valid) {
+        setCouponError(data.error ?? "Invalid coupon");
+      } else {
+        setAppliedCoupon(data.coupon as CouponResult);
+      }
+    } catch {
+      setCouponError("Could not validate coupon. Try again.");
+    } finally {
+      setCouponLoading(false);
+    }
+  }, [couponInput, subtotal]);
 
-      const { data: orderId, error: orderError } = await supabase.rpc("create_checkout_order", {
-        p_name: formData.name,
-        p_email: formData.email,
-        p_phone: formData.phone,
-        p_address: formData.address,
-        p_items: itemsPayload,
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponInput("");
+    setCouponError(null);
+  };
+
+  const isFormValid = () => {
+    return (
+      form.name.trim().length >= 2 &&
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) &&
+      /^\d{10}$/.test(form.phone) &&
+      form.address.trim().length >= 5 &&
+      form.city.trim().length >= 2 &&
+      form.state.trim().length >= 2 &&
+      /^\d{6}$/.test(form.pincode)
+    );
+  };
+
+  const handlePayment = async () => {
+    if (!isFormValid()) return;
+    setPaymentLoading(true);
+
+    try {
+      // Create Razorpay order
+      const orderRes = await fetch("/api/razorpay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: finalTotal }),
+      });
+      const orderData = await orderRes.json();
+      if (!orderRes.ok) throw new Error(orderData.error);
+
+      const shippingAddress = `${form.address}, ${form.city}, ${form.state} - ${form.pincode}`;
+
+      // Open Razorpay checkout
+      const rzp = new window.Razorpay({
+        key: orderData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "AMX Signs",
+        description: "Premium LED Neon Signs",
+        order_id: orderData.orderId,
+        prefill: { name: form.name, email: form.email, contact: form.phone },
+        theme: { color: "#C6FF00" },
+        handler: async (response: {
+          razorpay_order_id: string;
+          razorpay_payment_id: string;
+          razorpay_signature: string;
+        }) => {
+          // Verify and save order
+          const verifyRes = await fetch("/api/razorpay/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+              customerName: form.name,
+              customerEmail: form.email,
+              customerPhone: form.phone,
+              shippingAddress,
+              totalAmount: finalTotal,
+              discountAmount: discount,
+              couponCode: appliedCoupon?.code ?? null,
+              items: items.map((i) => ({
+                productId: i.product.id,
+                quantity: i.quantity,
+                priceAtPurchase: i.selectedPrice,
+                selectedSize: i.selectedSize,
+              })),
+            }),
+          });
+          const verifyData = await verifyRes.json();
+          if (verifyData.verified) {
+            clearCart();
+            setOrderSuccess(verifyData.orderId);
+          }
+        },
+        modal: { ondismiss: () => setPaymentLoading(false) },
       });
 
-      if (orderError) throw orderError;
-
-      // 3. Send Notification
-      try {
-        await fetch('/api/notifications', {
-          method: 'POST',
-          body: JSON.stringify({
-            type: 'order',
-            email: formData.email,
-            name: formData.name,
-            orderId: orderId,
-            total: getTotalPrice(),
-          }),
-        });
-      } catch (err) {
-        console.error('Failed to send email notification:', err);
-      }
-
-      // 4. Success
-      setStep("success");
-      clearCart();
-    } catch (error) {
-      console.error("Error placing order:", error);
-      alert("Failed to place order. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+      rzp.open();
+    } catch (err) {
+      console.error("Payment failed:", err);
+      setPaymentLoading(false);
     }
   };
 
-  if (items.length === 0 && step !== "success") {
+  // ─── Order Success Screen ───────────────────────────────────────────────────
+  if (orderSuccess) {
     return (
-      <main className="min-h-screen bg-black selection:bg-primary/30 selection:text-primary">
-        <Header />
-        <div className="pt-28 pb-24 container mx-auto px-6 flex items-center justify-center">
-          <div className="text-center">
-            <ShoppingBag className="w-16 h-16 text-white/10 mx-auto mb-4" />
-            <h1 className="text-2xl font-black uppercase tracking-tighter mb-2">
-              Your Cart is Empty
-            </h1>
-            <p className="text-text-muted text-sm mb-6">
-              Add some neon magic before checking out.
-            </p>
-            <Link
-              href="/collections"
-              className="inline-block bg-primary text-black px-8 py-3 rounded-full font-black text-xs tracking-[0.2em] uppercase hover:scale-105 transition-transform"
-            >
-              Shop Now
-            </Link>
+      <main className="min-h-screen bg-black flex items-center justify-center px-6">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center max-w-md"
+        >
+          <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-6 neon-bloom-lime">
+            <Check className="w-10 h-10 text-black" />
           </div>
-        </div>
-      </main>
-    );
-  }
-
-  if (step === "success") {
-    return (
-      <main className="min-h-screen bg-black selection:bg-primary/30 selection:text-primary">
-        <Header />
-        <div className="pt-28 pb-24 container mx-auto px-6 flex items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center max-w-md"
+          <h1 className="text-4xl font-black uppercase tracking-tighter mb-3">Order Confirmed!</h1>
+          <p className="text-text-muted text-sm mb-2">
+            Thank you, <span className="text-white font-bold">{form.name}</span>. Your neon sign is being crafted.
+          </p>
+          <p className="text-xs font-mono text-text-muted mb-8">
+            Confirmation sent to <span className="text-primary">{form.email}</span>
+          </p>
+          <Link
+            href="/collections"
+            className="inline-flex items-center gap-2 bg-primary text-black px-8 py-3 rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 transition-transform"
           >
-            <div className="w-20 h-20 bg-accent-mint rounded-full flex items-center justify-center mx-auto mb-6">
-              <Check className="w-10 h-10 text-black" />
-            </div>
-            <h1 className="text-3xl font-black uppercase tracking-tighter mb-4">
-              Order Confirmed
-            </h1>
-            <p className="text-text-muted text-sm mb-8">
-              Thank you for your order, {formData.name.split(' ')[0]}! We have received your order and will start handcrafted your neon magic soon.
-            </p>
-            <Link
-              href="/collections"
-              className="inline-block bg-primary text-black px-8 py-3 rounded-full font-black text-xs tracking-[0.2em] uppercase hover:scale-105 transition-transform"
-            >
-              Continue Shopping
-            </Link>
-          </motion.div>
-        </div>
+            <ShoppingBag className="w-4 h-4" />
+            Continue Shopping
+          </Link>
+        </motion.div>
       </main>
     );
   }
@@ -144,201 +226,225 @@ export default function CheckoutPage() {
   return (
     <main className="min-h-screen bg-black selection:bg-primary/30 selection:text-primary">
       <Header />
-      <div className="pt-28 pb-24 container mx-auto px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-12">
-            <Link
-              href="/collections"
-              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-text-muted hover:text-white transition-colors mb-4"
-            >
-              <ArrowLeft className="w-4 h-4" /> Continue Shopping
-            </Link>
-            <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">
-              Checkout
-            </h1>
+      <div className="pt-28 pb-24 container mx-auto px-4 sm:px-6 max-w-6xl">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-2 text-xs font-mono text-text-muted uppercase tracking-widest mb-10">
+          <Link href="/collections" className="hover:text-primary transition-colors flex items-center gap-1">
+            <ArrowLeft className="w-3 h-3" /> Shop
+          </Link>
+          <ChevronRight className="w-3 h-3" />
+          <span className="text-white">Checkout</span>
+        </div>
+
+        <div className="grid lg:grid-cols-[1fr_420px] gap-10 lg:gap-14 items-start">
+          {/* ── Left: Form ─────────────────────────────────────────── */}
+          <div className="space-y-8">
+            <div>
+              <h1 className="text-3xl font-black uppercase tracking-tighter mb-1">Checkout</h1>
+              <p className="text-text-muted text-sm">Complete your order. Free shipping PAN-India.</p>
+            </div>
+
+            {/* Contact */}
+            <Section title="Contact Information">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Input label="Full Name" name="name" value={form.name} onChange={handleField} placeholder="Akib Husain" />
+                <Input label="Email" name="email" type="email" value={form.email} onChange={handleField} placeholder="you@email.com" />
+                <Input label="Phone" name="phone" type="tel" value={form.phone} onChange={handleField} placeholder="10-digit mobile" className="sm:col-span-2" />
+              </div>
+            </Section>
+
+            {/* Shipping */}
+            <Section title="Shipping Address">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <Input label="Street Address" name="address" value={form.address} onChange={handleField} placeholder="House no, Street, Area" className="sm:col-span-2" />
+                <Input label="City" name="city" value={form.city} onChange={handleField} placeholder="Mumbai" />
+                <Input label="State" name="state" value={form.state} onChange={handleField} placeholder="Maharashtra" />
+                <Input label="Pincode" name="pincode" value={form.pincode} onChange={handleField} placeholder="400001" />
+              </div>
+            </Section>
+
+            {/* Trust */}
+            <div className="grid grid-cols-3 gap-4 py-6 border-t border-b border-white/5">
+              {[
+                { icon: Truck, label: "Free Shipping", sub: "All orders, PAN-India" },
+                { icon: ShieldCheck, label: "1Y Warranty", sub: "Hassle-free replacements" },
+                { icon: Zap, label: "Handcrafted", sub: "Premium LED neon" },
+              ].map(({ icon: Icon, label, sub }) => (
+                <div key={label} className="flex flex-col items-center text-center gap-1">
+                  <Icon className="w-5 h-5 text-primary mb-1" />
+                  <p className="text-[10px] font-black uppercase tracking-wider">{label}</p>
+                  <p className="text-[9px] text-text-muted">{sub}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
-            {/* Form */}
-            <div className="lg:col-span-3">
-              <form onSubmit={handlePlaceOrder} className="space-y-6">
-                <div className="bg-surface border border-white/5 rounded-2xl p-6 space-y-5">
-                  <h2 className="text-xs font-mono uppercase tracking-widest text-text-muted mb-2">
-                    Shipping Details
-                  </h2>
+          {/* ── Right: Order Summary ────────────────────────────────── */}
+          <div className="space-y-6 lg:sticky lg:top-28">
+            {/* Items */}
+            <div className="bg-surface border border-white/5 rounded-2xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between">
+                <h2 className="text-sm font-black uppercase tracking-widest">Order Summary</h2>
+                <span className="text-xs font-mono text-text-muted">{items.length} item{items.length !== 1 ? "s" : ""}</span>
+              </div>
 
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-[10px] font-mono uppercase tracking-widest text-text-muted block mb-2">
-                        Full Name
-                      </label>
-                      <div className="relative">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                        <input
-                          type="text"
-                          name="name"
-                          required
-                          value={formData.name}
-                          onChange={handleInputChange}
-                          className="w-full bg-black border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors"
-                          placeholder="John Doe"
-                        />
-                      </div>
+              <div className="divide-y divide-white/5">
+                {items.map(({ product, quantity, selectedSize, selectedPrice }) => (
+                  <div key={`${product.id}-${selectedSize}`} className="flex gap-3 p-4">
+                    <div className="w-14 h-14 rounded-xl bg-black border border-white/5 overflow-hidden shrink-0 flex items-center justify-center">
+                      {product.image_url ? (
+                        <Image src={product.image_url} alt={product.title} width={56} height={56} className="object-cover w-full h-full" />
+                      ) : (
+                        <span className="text-[8px] font-mono text-primary text-center uppercase leading-tight px-1">{product.title}</span>
+                      )}
                     </div>
-                    <div>
-                      <label className="text-[10px] font-mono uppercase tracking-widest text-text-muted block mb-2">
-                        Phone
-                      </label>
-                      <div className="relative">
-                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                        <input
-                          type="tel"
-                          name="phone"
-                          required
-                          value={formData.phone}
-                          onChange={handleInputChange}
-                          className="w-full bg-black border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors"
-                          placeholder="+91 98765 43210"
-                        />
-                      </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-black uppercase tracking-tight truncate">{product.title}</p>
+                      <p className="text-[10px] font-mono text-text-muted mt-0.5">Size: {selectedSize} · Qty: {quantity}</p>
                     </div>
+                    <p className="text-xs font-mono font-bold shrink-0">{formatPrice(selectedPrice * quantity)}</p>
                   </div>
-
-                  <div>
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-text-muted block mb-2">
-                      Email
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                      <input
-                        type="email"
-                        name="email"
-                        required
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        className="w-full bg-black border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors"
-                        placeholder="you@example.com"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-[10px] font-mono uppercase tracking-widest text-text-muted block mb-2">
-                      Address
-                    </label>
-                    <div className="relative">
-                      <MapPin className="absolute left-4 top-3.5 w-4 h-4 text-text-muted" />
-                      <textarea
-                        name="address"
-                        required
-                        rows={3}
-                        value={formData.address}
-                        onChange={handleInputChange}
-                        className="w-full bg-black border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors resize-none"
-                        placeholder="Full shipping address..."
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-surface border border-white/5 rounded-2xl p-6 space-y-5">
-                  <h2 className="text-xs font-mono uppercase tracking-widest text-text-muted mb-2">
-                    Payment Method
-                  </h2>
-                  <div className="flex items-center gap-3 p-4 rounded-xl border border-primary/30 bg-primary/5">
-                    <CreditCard className="w-5 h-5 text-primary" />
-                    <div>
-                      <p className="text-sm font-bold">Cash On Delivery / UPI</p>
-                      <p className="text-[10px] font-mono text-text-muted">
-                        Pay securely at your doorstep
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Mobile sticky bottom bar */}
-                <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface/95 backdrop-blur-md border-t border-white/10 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] z-40">
-                  <div className="container mx-auto max-w-4xl flex items-center justify-between gap-4">
-                    <div>
-                      <p className="text-[10px] font-mono uppercase tracking-widest text-text-muted">Total</p>
-                      <p className="text-xl font-mono font-black text-primary">{formatPrice(getTotalPrice())}</p>
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="bg-primary text-black px-8 py-3 rounded-full font-black text-xs tracking-[0.2em] uppercase hover:scale-[1.02] transition-transform active:scale-95 neon-bloom-lime disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                      {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                      {isSubmitting ? "Processing..." : "Place Order"}
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="hidden lg:flex w-full bg-primary text-black py-5 rounded-full font-black text-sm tracking-[0.2em] uppercase hover:scale-[1.02] transition-transform active:scale-95 neon-bloom-lime disabled:opacity-50 disabled:cursor-not-allowed items-center justify-center gap-3"
-                >
-                  {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
-                  {isSubmitting ? "Processing Order..." : `Place Order — ${formatPrice(getTotalPrice())}`}
-                </button>
-              </form>
-            </div>
-
-            {/* Summary */}
-            <div className="lg:col-span-2 order-first lg:order-last">
-              <div className="bg-surface border border-white/5 rounded-2xl p-6 lg:sticky lg:top-24">
-                <h2 className="text-xs font-mono uppercase tracking-widest text-text-muted mb-6">
-                  Order Summary
-                </h2>
-                <div className="space-y-4 mb-6">
-                  {items.map(({ product, quantity, selectedSize, selectedPrice }) => (
-                    <div
-                      key={product.id}
-                      className="flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-black rounded-lg border border-white/5 flex items-center justify-center text-[10px] font-mono text-text-muted/40">
-                          NEON
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold uppercase tracking-tight">
-                            {product.title}
-                          </p>
-                          <p className="text-[10px] font-mono text-text-muted">
-                            Qty: {quantity} • {selectedSize}
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-xs font-mono">
-                        {formatPrice(selectedPrice * quantity)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                <div className="border-t border-white/10 pt-4 space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-text-muted">Subtotal</span>
-                    <span className="font-mono">
-                      {formatPrice(getTotalPrice())}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-text-muted">Shipping</span>
-                    <span className="font-mono text-accent-mint">FREE</span>
-                  </div>
-                  <div className="flex items-center justify-between text-lg font-black pt-2 border-t border-white/5">
-                    <span>Total</span>
-                    <span className="font-mono text-primary">
-                      {formatPrice(getTotalPrice())}
-                    </span>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
+
+            {/* Coupon */}
+            <div className="bg-surface border border-white/5 rounded-2xl p-5 space-y-3">
+              <div className="flex items-center gap-2 mb-1">
+                <Tag className="w-4 h-4 text-primary" />
+                <span className="text-xs font-black uppercase tracking-widest">Promo Code</span>
+              </div>
+
+              <AnimatePresence mode="wait">
+                {appliedCoupon ? (
+                  <motion.div
+                    key="applied"
+                    initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    className="flex items-center justify-between bg-primary/10 border border-primary/30 rounded-xl px-4 py-3"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Ticket className="w-4 h-4 text-primary" />
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-widest text-primary">{appliedCoupon.code}</p>
+                        <p className="text-[10px] font-mono text-text-muted">
+                          {appliedCoupon.type === "percentage"
+                            ? `${appliedCoupon.value}% off`
+                            : `${formatPrice(appliedCoupon.value)} off`}
+                          {" — "}
+                          <span className="text-accent-mint">saving {formatPrice(appliedCoupon.discount)}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <button onClick={removeCoupon} className="p-1 hover:text-red-400 transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.div key="input" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex gap-2">
+                    <input
+                      value={couponInput}
+                      onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(null); }}
+                      onKeyDown={(e) => e.key === "Enter" && applyCoupon()}
+                      placeholder="ENTER CODE"
+                      className="flex-1 bg-black border border-white/10 focus:border-primary rounded-xl px-4 py-2.5 text-xs font-mono uppercase tracking-widest outline-none transition-colors placeholder:text-white/20"
+                    />
+                    <button
+                      onClick={applyCoupon}
+                      disabled={couponLoading || !couponInput.trim()}
+                      className="bg-primary text-black px-4 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest disabled:opacity-50 hover:scale-105 transition-transform flex items-center gap-1.5"
+                    >
+                      {couponLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Apply"}
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {couponError && (
+                <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-red-400 font-mono flex items-center gap-1.5">
+                  <X className="w-3 h-3" /> {couponError}
+                </motion.p>
+              )}
+            </div>
+
+            {/* Totals */}
+            <div className="bg-surface border border-white/5 rounded-2xl p-5 space-y-3">
+              <div className="flex justify-between text-sm text-text-muted">
+                <span>Subtotal</span>
+                <span className="font-mono">{formatPrice(subtotal)}</span>
+              </div>
+              <div className="flex justify-between text-sm text-text-muted">
+                <span>Shipping</span>
+                <span className="font-mono text-accent-mint font-bold">FREE</span>
+              </div>
+              {discount > 0 && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
+                  className="flex justify-between text-sm text-accent-mint"
+                >
+                  <span className="flex items-center gap-1.5"><Ticket className="w-3.5 h-3.5" /> Coupon ({appliedCoupon?.code})</span>
+                  <span className="font-mono font-bold">-{formatPrice(discount)}</span>
+                </motion.div>
+              )}
+              <div className="flex justify-between items-center pt-3 border-t border-white/10">
+                <span className="text-sm font-black uppercase tracking-widest">Total</span>
+                <span className="text-xl font-mono font-black text-primary">{formatPrice(finalTotal)}</span>
+              </div>
+            </div>
+
+            {/* Pay Button */}
+            <motion.button
+              whileTap={{ scale: 0.98 }}
+              onClick={handlePayment}
+              disabled={paymentLoading || !isFormValid()}
+              className="w-full bg-primary text-black py-4 rounded-full font-black text-sm tracking-[0.2em] uppercase flex items-center justify-center gap-3 neon-bloom-lime hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
+            >
+              {paymentLoading ? (
+                <><Loader2 className="w-5 h-5 animate-spin" /> Processing...</>
+              ) : (
+                <><ShieldCheck className="w-5 h-5" /> Pay {formatPrice(finalTotal)} Securely</>
+              )}
+            </motion.button>
+
+            <p className="text-[10px] font-mono text-text-muted text-center">
+              Secured by Razorpay · UPI, Cards, NetBanking & COD
+            </p>
           </div>
         </div>
       </div>
     </main>
+  );
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-surface border border-white/5 rounded-2xl p-5 sm:p-6 space-y-4">
+      <h2 className="text-xs font-black uppercase tracking-widest text-primary">{title}</h2>
+      {children}
+    </div>
+  );
+}
+
+function Input({
+  label, name, value, onChange, placeholder, type = "text", className = "",
+}: {
+  label: string; name: string; value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder?: string; type?: string; className?: string;
+}) {
+  return (
+    <div className={`flex flex-col gap-1.5 ${className}`}>
+      <label htmlFor={name} className="text-[10px] font-mono text-text-muted uppercase tracking-widest">{label}</label>
+      <input
+        id={name}
+        name={name}
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        autoComplete={name}
+        className="bg-black border border-white/10 focus:border-primary rounded-xl px-4 py-3 text-sm outline-none transition-colors placeholder:text-white/20"
+      />
+    </div>
   );
 }

@@ -1,14 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
-interface HeroProps {
-  products: any[];
-}
+const Hero = React.memo(() => {
+  const [runFirstFlicker, setRunFirstFlicker] = useState(false);
 
-const Hero = React.memo(({ products }: HeroProps) => {
+  useEffect(() => {
+    setRunFirstFlicker(true);
+  }, []);
+
   return (
     <section className="relative pt-28 pb-12 overflow-hidden bg-black flex flex-col items-center">
       {/* Background Glows */}
@@ -24,8 +26,11 @@ const Hero = React.memo(({ products }: HeroProps) => {
           <h1 className="text-[2.5rem] leading-none md:text-5xl lg:text-6xl font-black text-white tracking-tight mb-0">
             India&apos;s No. 1
           </h1>
-          {/* We use a script-like styling for "neon lights brand" */}
-          <div className="text-[1.75rem] md:text-4xl lg:text-5xl font-bold italic text-primary -rotate-2 transform -translate-y-1 mb-4 drop-shadow-[0_0_12px_rgba(198,255,0,0.6)]">
+          <div
+            className={`text-[1.75rem] md:text-4xl lg:text-5xl font-bold italic text-primary -rotate-2 transform -translate-y-1 mb-4 neon-sign-text ${
+              runFirstFlicker ? "neon-first-ignite" : "neon-steady-glow"
+            }`}
+          >
             neon lights brand
           </div>
           
