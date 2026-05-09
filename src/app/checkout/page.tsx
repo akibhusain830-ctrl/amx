@@ -138,29 +138,16 @@ export default function CheckoutPage() {
 
       const shippingAddress = `${form.address}, ${form.city}, ${form.state} - ${form.pincode}`;
 
-      // Open Razorpay checkout
-      const rzp = new window.Razorpay({
-        key: orderData.keyId,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: "AMX Signs",
-        description: "Premium LED Neon Signs",
-        order_id: orderData.orderId,
-        prefill: { name: form.name, email: form.email, contact: form.phone },
-        theme: { color: "#C6FF00" },
-        handler: async (response: {
-          razorpay_order_id: string;
-          razorpay_payment_id: string;
-          razorpay_signature: string;
-        }) => {
-          // Verify and save order
+      // Mock checkout flow
+      setTimeout(async () => {
+        try {
           const verifyRes = await fetch("/api/razorpay/verify", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              razorpayOrderId: response.razorpay_order_id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature,
+              razorpayOrderId: orderData.orderId,
+              razorpayPaymentId: `pay_mock_${Date.now()}`,
+              razorpaySignature: "mock_signature",
               customerName: form.name,
               customerEmail: form.email,
               customerPhone: form.phone,
@@ -176,16 +163,21 @@ export default function CheckoutPage() {
               })),
             }),
           });
+          
           const verifyData = await verifyRes.json();
           if (verifyData.verified) {
             clearCart();
             setOrderSuccess(verifyData.orderId);
+          } else {
+            console.error("Mock verification failed", verifyData);
           }
-        },
-        modal: { ondismiss: () => setPaymentLoading(false) },
-      });
-
-      rzp.open();
+        } catch (e) {
+          console.error("Mock checkout error", e);
+        } finally {
+          setPaymentLoading(false);
+        }
+      }, 1500);
+      
     } catch (err) {
       console.error("Payment failed:", err);
       setPaymentLoading(false);
