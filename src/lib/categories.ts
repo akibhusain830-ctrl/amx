@@ -5,7 +5,7 @@ export type CategoryConfig = {
 };
 
 export const CATEGORY_CONFIG: CategoryConfig[] = [
-  { label: "Cafe", slug: "lifestyle", dbValue: "Lifestyle" },
+  { label: "Cafe", slug: "cafe", dbValue: "Cafe" },
   { label: "Gaming", slug: "gaming", dbValue: "Gaming" },
   { label: "Wings", slug: "wings", dbValue: "Wings" },
   { label: "Cars", slug: "cars", dbValue: "Cars" },

@@ -260,7 +260,7 @@ export default function ProductForm({ product }: ProductFormProps) {
             <option value="Cars">Cars</option>
             <option value="Aesthetic">Aesthetic</option>
             <option value="Wings">Wings</option>
-            <option value="Lifestyle">Cafe</option>
+            <option value="Cafe">Cafe</option>
             <option value="Gaming">Gaming</option>
           </select>
         </div>

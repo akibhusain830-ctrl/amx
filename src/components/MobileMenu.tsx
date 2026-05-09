@@ -12,11 +12,11 @@ interface MobileMenuProps {
 
 const navLinks = [
   { href: "/collections", label: "Shop All" },
+  { href: "/collections/cafe", label: "Cafe" },
   { href: "/collections/gaming", label: "Gaming" },
   { href: "/collections/wings", label: "Wings" },
   { href: "/collections/cars", label: "Cars" },
-  { href: "/collections/f1", label: "F1" },
-  { href: "/collections/lifestyle", label: "Cafe" },
+  { href: "/collections/aesthetic", label: "Aesthetic" },
 ];
 
 const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {

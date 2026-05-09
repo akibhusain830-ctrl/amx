@@ -74,7 +74,7 @@ const Header = () => {
   const displayName = user?.user_metadata?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "Account";
   const navLinks = [
     { href: "/collections", label: "Shop All", match: "/collections" },
-    { href: "/collections/lifestyle", label: "Cafe", match: "/collections/lifestyle" },
+    { href: "/collections/cafe", label: "Cafe", match: "/collections/cafe" },
     { href: "/collections/gaming", label: "Gaming", match: "/collections/gaming" },
     { href: "/collections/wings", label: "Wings", match: "/collections/wings" },
     { href: "/collections/cars", label: "Cars", match: "/collections/cars" },

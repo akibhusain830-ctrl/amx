@@ -63,7 +63,7 @@ export default async function Home() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
             {[
               { title: "Shop All", count: `${totalCount} Designs`, image: products[0]?.image_url, href: "/collections" },
-              { title: "Cafe", count: `${categoryMap["Lifestyle"] || 0} Designs`, image: products.find(p => p.category === "Lifestyle")?.image_url, href: "/collections/lifestyle" },
+              { title: "Cafe", count: `${categoryMap["Cafe"] || 0} Designs`, image: products.find(p => p.category === "Cafe")?.image_url, href: "/collections/cafe" },
               { title: "Gaming", count: `${categoryMap["Gaming"] || 0} Designs`, image: products.find(p => p.category === "Gaming")?.image_url, href: "/collections/gaming" },
               { title: "Wings", count: `${categoryMap["Wings"] || 0} Designs`, image: products.find(p => p.category === "Wings")?.image_url, href: "/collections/wings" },
               { title: "Cars", count: `${categoryMap["Cars"] || 0} Designs`, image: products.find(p => p.category === "Cars")?.image_url, href: "/collections/cars" },
