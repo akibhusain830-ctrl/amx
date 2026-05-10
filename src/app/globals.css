@@ -19,7 +19,12 @@
     background-color: var(--background);
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-outfit tracking-tight;
   }
 }
@@ -28,7 +33,7 @@
   .neon-bloom-lime {
     filter: drop-shadow(0 0 8px rgba(198, 255, 0, 0.4)) drop-shadow(0 0 20px rgba(198, 255, 0, 0.2));
   }
-  
+
   .neon-bloom-pink {
     filter: drop-shadow(0 0 8px rgba(255, 0, 122, 0.4)) drop-shadow(0 0 20px rgba(255, 0, 122, 0.2));
   }
@@ -49,6 +54,7 @@
     0% {
       transform: translateX(0%);
     }
+
     100% {
       transform: translateX(-50%);
     }
@@ -62,44 +68,64 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
 
   @keyframes neon-flicker {
-    0%, 18%, 22%, 24%, 56%, 100% {
+
+    0%,
+    18%,
+    22%,
+    24%,
+    56%,
+    100% {
       opacity: 1;
-      filter: drop-shadow(0 0 6px rgba(198, 255, 0, 0.65))
-        drop-shadow(0 0 16px rgba(198, 255, 0, 0.45))
-        drop-shadow(0 0 34px rgba(198, 255, 0, 0.3));
+      filter: drop-shadow(0 0 6px rgba(var(--neon-color-rgb, 198, 255, 0), 0.65)) drop-shadow(0 0 16px rgba(var(--neon-color-rgb, 198, 255, 0), 0.45)) drop-shadow(0 0 34px rgba(var(--neon-color-rgb, 198, 255, 0), 0.3));
     }
-    20%, 23% {
+
+    20%,
+    23% {
       opacity: 0.28;
-      filter: drop-shadow(0 0 2px rgba(198, 255, 0, 0.3));
+      filter: drop-shadow(0 0 2px rgba(var(--neon-color-rgb, 198, 255, 0), 0.3));
     }
+
     57% {
       opacity: 0.5;
-      filter: drop-shadow(0 0 3px rgba(198, 255, 0, 0.38));
+      filter: drop-shadow(0 0 3px rgba(var(--neon-color-rgb, 198, 255, 0), 0.38));
     }
+
     58% {
       opacity: 0.2;
       filter: none;
     }
+
     59% {
       opacity: 0.85;
-      filter: drop-shadow(0 0 10px rgba(198, 255, 0, 0.55));
+      filter: drop-shadow(0 0 10px rgba(var(--neon-color-rgb, 198, 255, 0), 0.55));
     }
   }
 
   @keyframes neon-halo {
-    0%, 18%, 22%, 24%, 56%, 100% {
+
+    0%,
+    18%,
+    22%,
+    24%,
+    56%,
+    100% {
       opacity: 0.6;
       transform: scale(1);
     }
-    20%, 23%, 58% {
+
+    20%,
+    23%,
+    58% {
       opacity: 0.14;
       transform: scale(0.95);
     }
+
     59% {
       opacity: 0.5;
       transform: scale(1.05);
@@ -115,6 +141,7 @@
   }
 
   @keyframes neon-first-ignite {
+
     0%,
     8%,
     14%,
@@ -124,6 +151,7 @@
       text-shadow: none;
       filter: none;
     }
+
     10%,
     18%,
     24%,
@@ -135,6 +163,7 @@
         0 0 12px rgba(198, 255, 0, 0.5),
         0 0 20px rgba(198, 255, 0, 0.35);
     }
+
     100% {
       opacity: 1;
       text-shadow:
@@ -146,6 +175,7 @@
   }
 
   @keyframes neon-soft-breathe {
+
     0%,
     100% {
       text-shadow:
@@ -154,6 +184,7 @@
         0 0 15px rgba(198, 255, 0, 0.7),
         0 0 30px rgba(198, 255, 0, 0.3);
     }
+
     50% {
       text-shadow:
         0 0 3px #fff,
@@ -184,6 +215,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+
     .neon-first-ignite,
     .neon-steady-glow {
       animation: none !important;
@@ -195,6 +227,31 @@
 body.has-banner {
   --banner-height: 36px;
 }
+
 body.has-banner main {
   margin-top: var(--banner-height);
+}
+
+/* Thin custom scrollbar */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(198, 255, 0, 0.3) transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(198, 255, 0, 0.25);
+  border-radius: 999px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(198, 255, 0, 0.5);
 }

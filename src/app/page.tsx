@@ -4,16 +4,18 @@ import AnnouncementBar from "@/components/AnnouncementBar";
 import Hero from "@/components/Hero";
 import TrustBar from "@/components/TrustBar";
 import ProductCard from "@/components/ProductCard";
-import { getProducts } from "@/lib/products";
+import { getProducts, getTrendingProducts, getCategoryThumbnails } from "@/lib/products";
 import { ArrowRight, Star, ShieldCheck, Truck, Zap, Mail, MapPin, Phone, Camera, Play } from "lucide-react";
 import Link from "next/link";
 import NewsletterForm from "@/components/NewsletterForm";
+import CategoryCard from "@/components/CategoryCard";
 
 export const revalidate = 60; // Revalidate every minute
 
 export default async function Home() {
-  const products = await getProducts(50); // Limit to 50 products for performance
-  const trending = products.slice(0, 8);
+  const products = await getProducts(50);
+  const trending = await getTrendingProducts();
+  const categoryThumbs = await getCategoryThumbnails();
 
   // Dynamic category counts
   const categoryMap: Record<string, number> = {};
@@ -29,10 +31,25 @@ export default async function Home() {
       <Hero />
 
 
-      {/* USP Grid */}
-      <section className="py-8 md:py-10 border-b border-white/5">
+      {/* USP Strip */}
+      <section className="py-4 md:py-6 border-b border-white/5">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 min-[360px]:grid-cols-2 md:grid-cols-4 gap-6">
+          {/* Mobile: compact single row scroll */}
+          <div className="flex overflow-x-auto gap-3 scrollbar-hide md:hidden -mx-6 px-6 pb-2">
+            {[
+              { icon: Zap, title: "Handmade" },
+              { icon: Truck, title: "Free Shipping" },
+              { icon: ShieldCheck, title: "1Y Warranty" },
+              { icon: Star, title: "Easy Install" },
+            ].map((usp, i) => (
+              <div key={i} className="flex items-center gap-2 bg-surface/50 border border-white/5 rounded-full px-3 py-2 shrink-0">
+                <usp.icon className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span className="text-[10px] font-black uppercase tracking-wide whitespace-nowrap">{usp.title}</span>
+              </div>
+            ))}
+          </div>
+          {/* Desktop: 4-column grid */}
+          <div className="hidden md:grid grid-cols-4 gap-6">
             {[
               { icon: Zap, title: "Handmade", desc: "Premium handcrafted LED neon" },
               { icon: Truck, title: "Free Shipping", desc: "On all orders, PAN-India" },
@@ -52,49 +69,26 @@ export default async function Home() {
       </section>
 
       {/* Category Pulse — dynamic counts */}
-      <section className="py-10 md:py-12 border-b border-white/5" aria-labelledby="category-heading">
+      <section className="py-10 border-b border-white/5" aria-labelledby="category-heading">
         <div className="container mx-auto px-6">
-          <div className="mb-6 md:mb-8">
+          <div className="mb-6">
             <span className="text-primary font-mono text-xs uppercase tracking-[0.3em] mb-3 block">Explore</span>
             <h2 id="category-heading" className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
               Categories
             </h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+          <div className="flex overflow-x-auto gap-4 md:gap-6 pb-6 snap-x snap-mandatory scrollbar-hide">
             {[
-              { title: "Shop All", count: `${totalCount} Designs`, image: products[0]?.image_url, href: "/collections" },
-              { title: "Cafe", count: `${categoryMap["Cafe"] || 0} Designs`, image: products.find(p => p.category === "Cafe")?.image_url, href: "/collections/cafe" },
-              { title: "Gaming", count: `${categoryMap["Gaming"] || 0} Designs`, image: products.find(p => p.category === "Gaming")?.image_url, href: "/collections/gaming" },
-              { title: "Wings", count: `${categoryMap["Wings"] || 0} Designs`, image: products.find(p => p.category === "Wings")?.image_url, href: "/collections/wings" },
-              { title: "Cars", count: `${categoryMap["Cars"] || 0} Designs`, image: products.find(p => p.category === "Cars")?.image_url, href: "/collections/cars" },
-              { title: "Aesthetic", count: `${categoryMap["Aesthetic"] || 0} Designs`, image: products.find(p => p.category === "Aesthetic")?.image_url, href: "/collections/aesthetic" },
+              { title: "Shop All",   image: categoryThumbs["shop-all"]   ?? products[0]?.image_url,                               href: "/collections" },
+              { title: "Cafe",        image: categoryThumbs["cafe"]        ?? products.find(p => p.category === "Cafe")?.image_url,      href: "/collections/cafe" },
+              { title: "Aesthetic",   image: categoryThumbs["aesthetic"]   ?? products.find(p => p.category === "Aesthetic")?.image_url, href: "/collections/aesthetic" },
+              { title: "Love",        image: categoryThumbs["love"]        ?? products.find(p => p.category === "Love")?.image_url,      href: "/collections/love" },
+              { title: "Wings",       image: categoryThumbs["wings"]       ?? products.find(p => p.category === "Wings")?.image_url,     href: "/collections/wings" },
+              { title: "Gaming",      image: categoryThumbs["gaming"]      ?? products.find(p => p.category === "Gaming")?.image_url,    href: "/collections/gaming" },
+              { title: "Cars",        image: categoryThumbs["cars"]        ?? products.find(p => p.category === "Cars")?.image_url,      href: "/collections/cars" },
+              { title: "Under 4000",  image: categoryThumbs["under-4000"]  ?? products.find(p => p.price < 4000)?.image_url,            href: "/collections/under-4000" },
             ].map((cat, i) => (
-              <Link
-                key={i}
-                href={cat.href}
-                className="group flex flex-col gap-3"
-              >
-                <div className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-surface border border-white/5 transition-transform duration-500 group-hover:border-primary/30 flex items-center justify-center">
-                  {cat.image ? (
-                    <Image src={cat.image} alt={cat.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 50vw, 20vw" />
-                  ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e] to-[#0f0f1a] flex items-center justify-center">
-                      <div className="absolute inset-0 opacity-20" style={{backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(198,255,0,0.08) 0%, transparent 70%)'}} />
-                      <span className="text-xl font-black uppercase tracking-widest text-primary drop-shadow-[0_0_12px_rgba(198,255,0,0.8)] relative z-10">{cat.title}</span>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-500" />
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-black uppercase tracking-tight">{cat.title}</h3>
-                  </div>
-                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:shadow-[0_0_12px_rgba(198,255,0,0.5)] transition-all">
-                    <ArrowRight className="w-3.5 h-3.5 text-black" />
-                  </div>
-                </div>
-              </Link>
+              <CategoryCard key={i} cat={cat} useTransition={true} />
             ))}
           </div>
         </div>
@@ -115,7 +109,7 @@ export default async function Home() {
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-6 sm:gap-x-8 sm:gap-y-16">
           {trending.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product.id} product={product} useTransition={true} />
           ))}
         </div>
       </section>

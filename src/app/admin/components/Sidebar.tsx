@@ -12,16 +12,20 @@ import {
   LogOut,
   Zap,
   Menu,
-  X
+  X,
+  TrendingUp,
+  Image as ImageIcon,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
 const menuItems = [
-  { icon: LayoutDashboard, label: 'Overview', href: '/admin' },
-  { icon: ShoppingBag, label: 'Orders', href: '/admin/orders' },
-  { icon: MessageSquare, label: 'Custom Quotes', href: '/admin/quotes' },
-  { icon: Package, label: 'Products', href: '/admin/products' },
-  { icon: TicketPercent, label: 'Coupons', href: '/admin/coupons' },
+  { icon: LayoutDashboard, label: 'Overview',    href: '/admin' },
+  { icon: ShoppingBag,     label: 'Orders',       href: '/admin/orders' },
+  { icon: MessageSquare,   label: 'Custom Quotes', href: '/admin/quotes' },
+  { icon: Package,         label: 'Products',     href: '/admin/products' },
+  { icon: TrendingUp,      label: 'Trending',     href: '/admin/trending' },
+  { icon: ImageIcon,       label: 'Categories',   href: '/admin/categories' },
+  { icon: TicketPercent,   label: 'Coupons',      href: '/admin/coupons' },
 ]
 
 export default function Sidebar() {

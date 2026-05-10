@@ -26,6 +26,7 @@ import Header from '@/components/Header';
 
 interface ProductDetailClientProps {
   product: Product;
+  related?: Product[];
 }
 
 // Notify-me form for sold-out products
@@ -86,7 +87,7 @@ function SoldOutNotify({ productTitle, productId }: { productTitle: string; prod
   );
 }
 
-const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product }) => {
+const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product, related = [] }) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState('Regular');
   const [activeTab, setActiveTab] = useState<'details' | 'box' | 'install' | 'faq'>('details');
@@ -467,6 +468,41 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product }) =>
             </motion.button>
           </div>
         </div>
+      )}
+      {/* You May Also Like */}
+      {related.length > 0 && (
+        <section className="bg-black border-t border-white/5 pt-6 pb-32 md:py-14">
+          <div className="container mx-auto px-4 lg:px-6">
+            <div className="mb-8">
+              <span className="text-primary font-mono text-xs uppercase tracking-[0.3em] mb-3 block">More Like This</span>
+              <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter">You May Also Like</h2>
+            </div>
+            <div className="flex overflow-x-auto gap-4 md:gap-6 pb-4 snap-x snap-mandatory scrollbar-hide -mx-4 px-4 scroll-px-4 lg:-mx-6 lg:px-6 lg:scroll-px-6 after:content-[''] after:shrink-0 after:w-px">
+              {related.map((item) => (
+                <Link
+                  key={item.id}
+                  href={`/products/${item.slug}`}
+                  className="group shrink-0 w-[160px] sm:w-[200px] md:w-[220px] snap-start"
+                >
+                  <div className="relative aspect-square rounded-2xl overflow-hidden bg-surface border border-white/5 group-hover:border-primary/30 transition-all duration-300 mb-3">
+                    {item.image_url ? (
+                      <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-primary font-black uppercase text-sm tracking-widest">{item.category[0]}</span>
+                      </div>
+                    )}
+                    {item.badge && (
+                      <span className="absolute top-2 left-2 bg-primary text-black text-[8px] font-black uppercase px-2 py-0.5 rounded-full">{item.badge}</span>
+                    )}
+                  </div>
+                  <p className="text-xs font-bold uppercase tracking-wide truncate">{item.title}</p>
+                  <p className="text-primary font-mono text-sm font-black mt-0.5">₹{item.price.toLocaleString('en-IN')}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
       )}
     </main>
   );

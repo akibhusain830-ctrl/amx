@@ -197,7 +197,7 @@ export default function ProfilePage() {
                   }`}
                 >
                   <Package className="w-4 h-4" />
-                  <span className="text-xs uppercase tracking-widest">My Orders</span>
+                  <span className="text-xs uppercase tracking-widest">Profile</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("details")}

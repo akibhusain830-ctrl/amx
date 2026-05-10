@@ -1,20 +1,38 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Star, Zap, Truck, ShoppingBag } from "lucide-react";
 import { Product } from "@/lib/products";
 import { useCartStore } from "@/store/cartStore";
 import { formatPrice } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { getRandomNeonShape, NeonShape } from "@/lib/shapes";
 
 interface ProductCardProps {
   product: Product;
+  useTransition?: boolean;
 }
 
-const ProductCard = React.memo(({ product }: ProductCardProps) => {
+const ProductCard = React.memo(({ product, useTransition = false }: ProductCardProps) => {
+  const router = useRouter();
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [navShape, setNavShape] = useState<NeonShape | null>(null);
   const addItem = useCartStore((state) => state.addItem);
   const openCart = useCartStore((state) => state.openCart);
+
+  const handleNavigate = (e: React.MouseEvent) => {
+    if (useTransition) {
+      e.preventDefault();
+      setNavShape(getRandomNeonShape());
+      setIsNavigating(true);
+      router.prefetch(`/products/${product.slug}`);
+      setTimeout(() => {
+        router.push(`/products/${product.slug}`);
+      }, 1000);
+    }
+  };
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -26,7 +44,7 @@ const ProductCard = React.memo(({ product }: ProductCardProps) => {
 
   return (
     <div className="group h-full flex flex-col bg-surface border border-white/5 rounded-2xl p-2 sm:p-3 transition-transform duration-300 hover:-translate-y-1 hover:border-primary/20">
-      <Link href={`/products/${product.slug}`} className="block relative">
+      <Link href={`/products/${product.slug}`} onClick={handleNavigate} className="block relative">
         <div className="relative aspect-square rounded-xl overflow-hidden bg-black border border-white/5 transition-all duration-500 mb-4 flex items-center justify-center">
           {/* Product Image or Room Mockup Placeholder */}
           {product.image_url ? (
@@ -85,10 +103,22 @@ const ProductCard = React.memo(({ product }: ProductCardProps) => {
               Sold Out
             </div>
           )}
+          {/* Loading Overlay */}
+          {isNavigating && navShape && (
+            <div className="absolute -inset-px bg-black z-[100] flex flex-col items-center justify-center rounded-xl" style={{ "--neon-color-rgb": navShape.rgb } as React.CSSProperties}>
+              <div className="relative">
+                <navShape.icon className={`w-12 h-12 ${navShape.colorClass} neon-flicker`} />
+                <div className={`absolute inset-0 ${navShape.bgClass} blur-xl rounded-full neon-halo`} />
+              </div>
+              <p className="mt-6 text-xs font-mono uppercase tracking-[0.3em] text-text-muted animate-pulse [animation-duration:1.8s]">
+                Loading...
+              </p>
+            </div>
+          )}
         </div>
       </Link>
 
-      <Link href={`/products/${product.slug}`} className="flex flex-col flex-1 mt-auto">
+      <Link href={`/products/${product.slug}`} onClick={handleNavigate} className="flex flex-col flex-1 mt-auto">
         <div className="flex flex-col flex-1">
           <div className="mb-2">
             <div className="flex items-center justify-between mb-1.5">

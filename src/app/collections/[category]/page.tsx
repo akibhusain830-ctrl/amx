@@ -1,11 +1,12 @@
 import {
   getProductsByCategory,
   getAllCategories,
+  getProductsUnderPrice,
 } from "@/lib/products";
 import Header from "@/components/Header";
-import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import { mapDbCategoryToLabel, mapSlugToDbCategory } from "@/lib/categories";
+import CollectionGrid from "./CollectionGrid";
 
 interface CategoryPageProps {
   params: { category: string };
@@ -29,8 +30,15 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: CategoryPageProps) {
   const dbCategory = mapSlugToDbCategory(params.category);
-  const categoryProducts = await getProductsByCategory(dbCategory);
-  const categoryName = mapDbCategoryToLabel(categoryProducts[0]?.category || dbCategory);
+  let categoryProducts;
+  let categoryName;
+  if (params.category.toLowerCase() === "under-4000") {
+    categoryProducts = await getProductsUnderPrice(4000);
+    categoryName = "Under 4000";
+  } else {
+    categoryProducts = await getProductsByCategory(dbCategory);
+    categoryName = mapDbCategoryToLabel(categoryProducts[0]?.category || dbCategory);
+  }
   return {
     title: `${categoryName} | Premium Neon Signs | AMX Signs`,
     description: `Discover our exclusive ${categoryName} neon sign collection. Handcrafted premium LED neon for your space. Free shipping India-wide.`,
@@ -39,8 +47,17 @@ export async function generateMetadata({ params }: CategoryPageProps) {
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const dbCategory = mapSlugToDbCategory(params.category);
-  const categoryProducts = await getProductsByCategory(dbCategory);
-  const categoryName = mapDbCategoryToLabel(categoryProducts[0]?.category || dbCategory);
+  
+  let categoryProducts;
+  let categoryName;
+
+  if (params.category.toLowerCase() === "under-4000") {
+    categoryProducts = await getProductsUnderPrice(4000);
+    categoryName = "Under 4000";
+  } else {
+    categoryProducts = await getProductsByCategory(dbCategory);
+    categoryName = mapDbCategoryToLabel(categoryProducts[0]?.category || dbCategory);
+  }
 
   if (categoryProducts.length === 0) {
     return (
@@ -83,17 +100,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
             {categoryName}
           </h1>
-          <p className="text-text-muted text-sm mt-4 max-w-lg">
-            {categoryProducts.length} premium designs in the {categoryName}{" "}
-            category.
-          </p>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-6 sm:gap-x-8 sm:gap-y-16">
-          {categoryProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <CollectionGrid products={categoryProducts} />
       </div>
     </main>
   );

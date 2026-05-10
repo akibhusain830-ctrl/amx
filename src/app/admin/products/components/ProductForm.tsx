@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Upload, X, Loader2 } from "lucide-react";
+import { Upload, X, Loader2, ChevronDown } from "lucide-react";
 
 interface ProductData {
   id: string;
@@ -37,6 +37,7 @@ export default function ProductForm({ product }: ProductFormProps) {
 
   const [title, setTitle] = useState(product?.title ?? "");
   const [category, setCategory] = useState(product?.category ?? "");
+  const [categoryOpen, setCategoryOpen] = useState(false);
   // price is derived from regPrice — no separate state needed
   const [description, setDescription] = useState(product?.description ?? "");
   const [badge, setBadge] = useState(product?.badge ?? "");
@@ -249,20 +250,61 @@ export default function ProductForm({ product }: ProductFormProps) {
           <label className="block text-xs font-bold uppercase tracking-widest text-text-muted mb-2">
             Category <span className="text-primary">*</span>
           </label>
-          <select
-            required
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer"
-          >
-            <option value="" disabled>Select a category...</option>
-            <option value="Shop All">Shop All</option>
-            <option value="Cars">Cars</option>
-            <option value="Aesthetic">Aesthetic</option>
-            <option value="Wings">Wings</option>
-            <option value="Cafe">Cafe</option>
-            <option value="Gaming">Gaming</option>
-          </select>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setCategoryOpen(!categoryOpen)}
+              className={`w-full flex items-center justify-between text-left border rounded-xl px-4 py-3 focus:outline-none transition-colors ${
+                categoryOpen ? "bg-primary/5 border-primary/50" : "bg-black border-white/10 hover:border-white/20"
+              }`}
+            >
+              <span className={category ? "text-white" : "text-text-muted"}>
+                {category || "Select a category..."}
+              </span>
+              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${categoryOpen ? "rotate-180 text-primary" : "text-text-muted"}`} />
+            </button>
+
+            {categoryOpen && (
+              <div className="fixed inset-0 z-10" onClick={() => setCategoryOpen(false)} />
+            )}
+
+            {categoryOpen && (
+              <div className="absolute left-0 right-0 top-full mt-2 z-20 rounded-xl overflow-hidden
+                border border-white/[0.08] shadow-[0_20px_60px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.06)]"
+                style={{ background: "rgba(10,10,10,0.97)", backdropFilter: "blur(24px)" }}
+              >
+                <div className="max-h-60 overflow-y-auto thin-scrollbar p-2">
+                  {["Cafe", "Aesthetic", "Love", "Wings", "Gaming", "Cars"].map((cat) => {
+                    const isActive = category === cat;
+                    return (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => { setCategory(cat); setCategoryOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-150 text-left group ${
+                          isActive ? "bg-primary/10 border border-primary/20" : "border border-transparent hover:bg-white/[0.04]"
+                        }`}
+                      >
+                        <span className={`w-4 h-4 rounded-full shrink-0 flex items-center justify-center transition-all ${
+                          isActive ? "bg-primary" : "border border-white/20 group-hover:border-white/40"
+                        }`}>
+                          {isActive && (
+                            <svg width="7" height="5" viewBox="0 0 7 5" fill="none">
+                              <path d="M1 2.5L2.8 4.2L6 1" stroke="black" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          )}
+                        </span>
+                        <span className={`text-[13px] font-bold tracking-wide ${isActive ? "text-primary" : "text-white/90 group-hover:text-white"}`}>
+                          {cat}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+              </div>
+            )}
+          </div>
         </div>
 
 

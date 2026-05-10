@@ -15,6 +15,7 @@ const Header = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
+  const [hoveredLink, setHoveredLink] = useState<string | null>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -89,12 +90,14 @@ const Header = () => {
 
   const displayName = user?.user_metadata?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "Account";
   const navLinks = [
-    { href: "/collections", label: "Shop All", match: "/collections" },
-    { href: "/collections/cafe", label: "Cafe", match: "/collections/cafe" },
-    { href: "/collections/gaming", label: "Gaming", match: "/collections/gaming" },
-    { href: "/collections/wings", label: "Wings", match: "/collections/wings" },
-    { href: "/collections/cars", label: "Cars", match: "/collections/cars" },
-    { href: "/collections/aesthetic", label: "Aesthetic", match: "/collections/aesthetic" },
+    { href: "/collections",          label: "Shop All",   match: "/collections",          color: "#C6FF00", bg: "rgba(198,255,0,0.12)" },
+    { href: "/collections/cafe",     label: "Cafe",      match: "/collections/cafe",      color: "#FF9500", bg: "rgba(255,149,0,0.12)" },
+    { href: "/collections/aesthetic",label: "Aesthetic", match: "/collections/aesthetic", color: "#BF5FFF", bg: "rgba(191,95,255,0.12)" },
+    { href: "/collections/love",     label: "Love",      match: "/collections/love",      color: "#FF007A", bg: "rgba(255,0,122,0.12)" },
+    { href: "/collections/wings",    label: "Wings",     match: "/collections/wings",     color: "#00F0FF", bg: "rgba(0,240,255,0.12)" },
+    { href: "/collections/gaming",   label: "Gaming",    match: "/collections/gaming",    color: "#4D7CFF", bg: "rgba(77,124,255,0.12)" },
+    { href: "/collections/cars",     label: "Cars",      match: "/collections/cars",      color: "#FF4500", bg: "rgba(255,69,0,0.12)" },
+    { href: "/collections/under-4000",label: "Under 4000",match: "/collections/under-4000",color: "#36F4A4", bg: "rgba(54,244,164,0.12)" },
   ];
 
   return (
@@ -143,18 +146,28 @@ const Header = () => {
           >
             {navLinks.map((link) => {
               const isActive = pathname === link.match || (link.match === "/collections" && pathname === "/collections");
+              const isHovered = hoveredLink === link.href;
+              const showColor = isActive || isHovered;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`relative px-4 py-2 rounded-full transition-all ${
-                    isActive
-                      ? "text-primary bg-primary/10 shadow-[0_0_16px_rgba(198,255,0,0.25)]"
-                      : "text-white hover:text-primary"
-                  }`}
+                  onMouseEnter={() => setHoveredLink(link.href)}
+                  onMouseLeave={() => setHoveredLink(null)}
+                  className="relative px-4 py-2 rounded-full transition-all duration-200"
+                  style={{
+                    color: showColor ? link.color : "#ffffff",
+                    backgroundColor: showColor ? link.bg : "transparent",
+                    boxShadow: isActive ? `0 0 18px ${link.bg}` : "none",
+                  }}
                 >
                   {link.label}
-                  {isActive && <span className="absolute left-3 right-3 -bottom-0.5 h-[2px] rounded-full bg-primary shadow-[0_0_12px_rgba(198,255,0,0.9)]" />}
+                  {isActive && (
+                    <span
+                      className="absolute left-3 right-3 -bottom-0.5 h-[2px] rounded-full"
+                      style={{ backgroundColor: link.color, boxShadow: `0 0 12px ${link.color}` }}
+                    />
+                  )}
                 </Link>
               );
             })}
@@ -204,8 +217,8 @@ const Header = () => {
                       onClick={() => setUserMenuOpen(false)}
                       className="flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-widest text-text-muted hover:text-white hover:bg-white/5 transition-colors"
                     >
-                      <Package className="w-4 h-4" />
-                      My Orders
+                      <User className="w-4 h-4" />
+                      Profile
                     </Link>
                     <button
                       onClick={handleSignOut}
