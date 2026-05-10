@@ -127,7 +127,7 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product }) =>
   return (
     <main className="min-h-screen bg-black selection:bg-primary/30 selection:text-primary">
       <Header />
-      <div className="pt-24 pb-24 container mx-auto px-6">
+      <div className="pt-24 pb-16 container mx-auto px-4 lg:px-6">
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="mb-8">
           <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-mono text-text-muted uppercase tracking-widest">
@@ -153,16 +153,43 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product }) =>
           </ol>
         </nav>
 
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
-          {/* Image Area with Gallery */}
+        {/* 3-col on desktop: thumbnails | main image | details */}
+        <div className="grid lg:grid-cols-[56px_1fr_1fr] xl:grid-cols-[64px_1fr_1fr] gap-4 lg:gap-6 xl:gap-10">
+          {/* Vertical Thumbnail Strip — desktop only */}
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            className="hidden lg:flex flex-col gap-2.5"
+          >
+            {images.map((img, idx) => (
+              <button
+                key={idx}
+                onClick={() => setSelectedImageIndex(idx)}
+                className={`relative aspect-square w-full rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
+                  selectedImageIndex === idx
+                    ? 'border-primary shadow-[0_0_10px_rgba(198,255,0,0.4)]'
+                    : 'border-white/10 hover:border-white/30'
+                }`}
+              >
+                <img src={img} alt={`${product.title} view ${idx + 1}`} className="w-full h-full object-cover" />
+              </button>
+            ))}
+            {/* Placeholder thumbnails when no images */}
+            {images.length === 0 && (
+              <div className="aspect-square w-full rounded-xl border-2 border-primary bg-surface" />
+            )}
+          </motion.div>
+
+          {/* Main Image */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-3"
           >
             {/* Main Image */}
-            <div className="relative aspect-[9/10] rounded-3xl overflow-hidden border border-white/10 bg-surface flex items-center justify-center">
+            <div className="relative aspect-square lg:max-h-[calc(100vh-180px)] rounded-2xl lg:rounded-3xl overflow-hidden border border-white/10 bg-surface flex items-center justify-center">
               {images.length > 0 && images[selectedImageIndex] ? (
                 <img src={images[selectedImageIndex]} alt={product.title} className="w-full h-full object-cover" />
               ) : (
@@ -178,7 +205,11 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product }) =>
                   </div>
                 </div>
               )}
-              {product.badge && <div className="absolute top-4 left-4 bg-primary text-black text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-lg">{product.badge}</div>}
+              {product.badge && (
+                <div className="absolute top-3 left-3 bg-primary text-black text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-lg">
+                  {product.badge}
+                </div>
+              )}
               {!product.in_stock && (
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
                   <span className="text-2xl font-black uppercase tracking-tighter text-white/60">Sold Out</span>
@@ -186,15 +217,16 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product }) =>
               )}
             </div>
 
-            {/* Thumbnails */}
+            {/* Mobile Thumbnails — horizontal scroll, hidden on desktop */}
             {images.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+              <div className="flex lg:hidden gap-2.5 overflow-x-auto pb-1 scrollbar-hide">
                 {images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedImageIndex(idx)}
-                    className={`relative aspect-[9/10] w-16 sm:w-20 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${selectedImageIndex === idx ? 'border-primary' : 'border-white/10 hover:border-white/30'
-                      }`}
+                    className={`relative aspect-square w-14 sm:w-16 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${
+                      selectedImageIndex === idx ? 'border-primary' : 'border-white/10 hover:border-white/30'
+                    }`}
                   >
                     <img src={img} alt={`${product.title} view ${idx + 1}`} className="w-full h-full object-cover" />
                   </button>
@@ -208,7 +240,7 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product }) =>
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="flex flex-col"
+            className="flex flex-col lg:overflow-y-auto lg:max-h-[calc(100vh-180px)] lg:pr-1"
           >
             <span className="text-[10px] font-mono text-primary uppercase tracking-[0.3em] mb-3">{product.category}</span>
             <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-6">{product.title}</h1>
