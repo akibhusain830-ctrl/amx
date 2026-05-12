@@ -4,8 +4,9 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import ProductCard from "@/components/ProductCard";
 import { Product } from "@/lib/products";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
+import { useParams } from "next/navigation";
 
-const PAGE_SIZE = 8;
+const LOAD_MORE_SIZE = 16;
 
 type SortKey = "default" | "price-asc" | "price-desc" | "newest";
 
@@ -17,12 +18,41 @@ const SORT_OPTIONS: { key: SortKey; label: string; desc: string }[] = [
 ];
 
 export default function CollectionGrid({ products }: { products: Product[] }) {
-  const [sort, setSort] = useState<SortKey>("default");
-  const [sortOpen, setSortOpen] = useState(false);
-  const [page, setPage] = useState(1);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const sentinelRef = useRef<HTMLDivElement>(null);
+  const params   = useParams();
+  const category = (params?.category as string) || "default";
 
+  // Keys derived from category — stable for the lifetime of this component
+  const SK_SORT   = `cat_sort_${category}`;
+  const SK_LIMIT  = `cat_limit_${category}`;
+  const SK_SCROLL = `cat_scroll_${category}`;
+
+  // ── Initialise state synchronously from sessionStorage ────────────────────
+  // useState initialiser runs once on first render — no async update needed.
+  const [sort,  setSort]  = useState<SortKey>(() =>
+    typeof window !== "undefined" ? (sessionStorage.getItem(SK_SORT) as SortKey ?? "default") : "default"
+  );
+  const [limit, setLimit] = useState(() =>
+    typeof window !== "undefined" ? parseInt(sessionStorage.getItem(SK_LIMIT) ?? String(LOAD_MORE_SIZE)) : LOAD_MORE_SIZE
+  );
+
+  const [sortOpen,      setSortOpen]      = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [scrollReady,   setScrollReady]   = useState(false);
+
+  const sentinelRef        = useRef<HTMLDivElement>(null);
+  const scrollAttemptedRef = useRef(false);
+
+  // ── Persist sort + limit ──────────────────────────────────────────────────
+  useEffect(() => { sessionStorage.setItem(SK_SORT, sort); }, [sort, SK_SORT]);
+
+  // ── Track scroll ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    const onScroll = () => sessionStorage.setItem(SK_SCROLL, String(Math.round(window.scrollY)));
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [SK_SCROLL]);
+
+  // ── Sort products ─────────────────────────────────────────────────────────
   const sorted = useMemo(() => {
     const arr = [...products];
     if (sort === "price-asc")  arr.sort((a, b) => a.price - b.price);
@@ -30,48 +60,64 @@ export default function CollectionGrid({ products }: { products: Product[] }) {
     return arr;
   }, [products, sort]);
 
-  const visible = sorted.slice(0, page * PAGE_SIZE);
+  // ── Visible slice — limit is already correct on first render ──────────────
+  const visible = sorted.slice(0, limit);
   const hasMore = visible.length < sorted.length;
   const current = SORT_OPTIONS.find((o) => o.key === sort)!;
 
-  // Infinite scroll via IntersectionObserver
+  // ── Persist limit ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    sessionStorage.setItem(SK_LIMIT, String(visible.length));
+  }, [visible.length, SK_LIMIT]);
+
+  // ── Scroll restoration — fires once when products are ready ───────────────
+  useEffect(() => {
+    if (scrollAttemptedRef.current) return;
+    if (products.length === 0)      return;
+
+    scrollAttemptedRef.current = true;
+    const target = parseInt(sessionStorage.getItem(SK_SCROLL) ?? "0");
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: target, behavior: "auto" });
+        setScrollReady(true);
+      });
+    });
+  // SK_SCROLL is stable — safe to omit from deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products]);
+
+  // ── Infinite scroll — only after restoration ──────────────────────────────
   useEffect(() => {
     const sentinel = sentinelRef.current;
-    if (!sentinel || !hasMore) return;
-
+    if (!sentinel || !hasMore || !scrollReady) return;
     const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !isLoadingMore) {
+      ([entry]) => {
+        if (entry.isIntersecting && !isLoadingMore) {
           setIsLoadingMore(true);
-          setTimeout(() => {
-            setPage((p) => p + 1);
-            setIsLoadingMore(false);
-          }, 500);
+          setTimeout(() => { setLimit(l => l + LOAD_MORE_SIZE); setIsLoadingMore(false); }, 300);
         }
       },
-      { rootMargin: "200px" }
+      { rootMargin: "400px" }
     );
-
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasMore, isLoadingMore]);
+  }, [hasMore, isLoadingMore, scrollReady]);
 
   return (
-    <>
+    <div>
       {/* Sort Bar */}
       <div className="flex items-center justify-between mb-6 md:mb-10">
         <p className="text-text-muted text-sm">
           <span className="text-white font-bold">{sorted.length}</span> designs
         </p>
 
-        {/* Sort Dropdown */}
         <div className="relative">
           <button
             onClick={() => setSortOpen((o) => !o)}
             className={`flex items-center gap-2.5 border transition-all duration-200 rounded-full px-4 py-2.5 text-xs font-black uppercase tracking-widest ${
-              sortOpen
-                ? "bg-primary/10 border-primary/50 text-primary"
-                : "bg-white/5 border-white/10 hover:border-primary/40 text-white"
+              sortOpen ? "bg-primary/10 border-primary/50 text-primary" : "bg-white/5 border-white/10 hover:border-primary/40 text-white"
             }`}
           >
             <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
@@ -96,7 +142,7 @@ export default function CollectionGrid({ products }: { products: Product[] }) {
                   return (
                     <button
                       key={opt.key}
-                      onClick={() => { setSort(opt.key); setPage(1); setSortOpen(false); }}
+                      onClick={() => { setSort(opt.key); setLimit(LOAD_MORE_SIZE); setSortOpen(false); }}
                       className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-150 text-left group ${
                         isActive ? "bg-primary/10 border border-primary/20" : "border border-transparent hover:bg-white/[0.04]"
                       }`}
@@ -133,26 +179,26 @@ export default function CollectionGrid({ products }: { products: Product[] }) {
         ))}
       </div>
 
-      {/* Sentinel + Loader */}
-      <div ref={sentinelRef} className="mt-16 flex flex-col items-center gap-3">
-        {isLoadingMore && (
-          <div className="flex flex-col items-center gap-3 py-4 animate-fade-in">
-            {/* Spinner ring */}
-            <div className="relative w-10 h-10">
-              <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
-              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
-              <div className="absolute inset-[6px] rounded-full bg-primary/10" />
+      {/* Sentinel — only mounted after scroll restoration */}
+      {scrollReady && (
+        <div ref={sentinelRef} className="mt-16 flex flex-col items-center gap-3">
+          {isLoadingMore && (
+            <div className="flex flex-col items-center gap-3 py-4">
+              <div className="relative w-10 h-10">
+                <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
+                <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
+                <div className="absolute inset-[6px] rounded-full bg-primary/10" />
+              </div>
+              <p className="text-[10px] font-mono text-text-muted uppercase tracking-widest">Loading more...</p>
             </div>
-            <p className="text-[10px] font-mono text-text-muted uppercase tracking-widest">Loading more...</p>
-          </div>
-        )}
-
-        {!hasMore && !isLoadingMore && sorted.length > PAGE_SIZE && (
-          <p className="text-text-muted text-xs font-mono tracking-widest py-4">
-            — You&apos;ve seen all {sorted.length} designs —
-          </p>
-        )}
-      </div>
-    </>
+          )}
+          {!hasMore && !isLoadingMore && sorted.length > LOAD_MORE_SIZE && (
+            <p className="text-text-muted text-xs font-mono tracking-widest py-4">
+              — You&apos;ve seen all {sorted.length} designs —
+            </p>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

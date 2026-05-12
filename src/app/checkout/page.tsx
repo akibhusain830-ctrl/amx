@@ -383,8 +383,8 @@ export default function CheckoutPage() {
               ].map(({ icon: Icon, label, sub }) => (
                 <div key={label} className="flex flex-col items-center text-center gap-1">
                   <Icon className="w-5 h-5 text-primary mb-1" />
-                  <p className="text-[10px] font-black uppercase tracking-wider">{label}</p>
-                  <p className="text-[9px] text-text-muted">{sub}</p>
+                  <p className="text-xs font-black uppercase tracking-wider">{label}</p>
+                  <p className="text-[10px] text-text-muted">{sub}</p>
                 </div>
               ))}
             </div>
@@ -545,7 +545,7 @@ function Input({
 }) {
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
-      <label htmlFor={name} className="text-[10px] font-mono text-text-muted uppercase tracking-widest">{label}</label>
+      <label htmlFor={name} className="text-xs font-mono text-text-muted uppercase tracking-widest">{label}</label>
       <input
         id={name}
         name={name}

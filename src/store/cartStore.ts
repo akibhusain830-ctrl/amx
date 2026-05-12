@@ -2,18 +2,30 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Product } from "@/lib/products";
 
+export interface CustomSignDetails {
+  text: string;
+  fontName: string;
+  fontFamily: string;
+  color: string;
+  colorHex: string;
+  backing: string;
+  dimensions: string;
+}
+
 export interface CartItem {
   product: Product;
   quantity: number;
   selectedSize: string;
   selectedPrice: number;
+  customDetails?: CustomSignDetails;
+  cartItemId?: string; // unique id for custom signs to prevent merging
 }
 
 interface CartState {
   items: CartItem[];
   isOpen: boolean;
-  addItem: (product: Product, size: string, price: number) => void;
-  removeItem: (productId: string, size: string) => void;
+  addItem: (product: Product, size: string, price: number, customDetails?: CustomSignDetails) => void;
+  removeItem: (productId: string, size: string, cartItemId?: string) => void;
   updateQuantity: (productId: string, size: string, quantity: number) => void;
   clearCart: () => void;
   getTotalItems: () => number;
@@ -28,15 +40,20 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: [],
       isOpen: false,
-      addItem: (product, size, price) =>
+      addItem: (product, size, price, customDetails?) =>
         set((state) => {
+          // Custom signs are always unique — never merge them
+          if (customDetails) {
+            const cartItemId = `custom-${Date.now()}-${Math.random()}`;
+            return { items: [...state.items, { product, quantity: 1, selectedSize: size, selectedPrice: price, customDetails, cartItemId }] };
+          }
           const existing = state.items.find(
-            (item) => item.product.id === product.id && item.selectedSize === size
+            (item) => item.product.id === product.id && item.selectedSize === size && !item.customDetails
           );
           if (existing) {
             return {
               items: state.items.map((item) =>
-                item.product.id === product.id && item.selectedSize === size
+                item.product.id === product.id && item.selectedSize === size && !item.customDetails
                   ? { ...item, quantity: item.quantity + 1 }
                   : item
               ),
@@ -44,9 +61,12 @@ export const useCartStore = create<CartState>()(
           }
           return { items: [...state.items, { product, quantity: 1, selectedSize: size, selectedPrice: price }] };
         }),
-      removeItem: (productId, size) =>
+      removeItem: (productId, size, cartItemId?) =>
         set((state) => ({
-          items: state.items.filter((item) => !(item.product.id === productId && item.selectedSize === size)),
+          items: state.items.filter((item) => {
+            if (cartItemId) return item.cartItemId !== cartItemId;
+            return !(item.product.id === productId && item.selectedSize === size && !item.customDetails);
+          }),
         })),
       updateQuantity: (productId, size, quantity) =>
         set((state) => {

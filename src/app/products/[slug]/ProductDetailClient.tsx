@@ -23,6 +23,7 @@ import { Product } from '@/lib/products';
 import { useCartStore } from '@/store/cartStore';
 import { formatPrice } from '@/lib/utils';
 import Header from '@/components/Header';
+import { useRouter } from 'next/navigation';
 
 interface ProductDetailClientProps {
   product: Product;
@@ -94,9 +95,10 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product, rela
   const addItem = useCartStore((state) => state.addItem);
   const openCart = useCartStore((state) => state.openCart);
   const [added, setAdded] = useState(false);
+  const router = useRouter();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  const images = product.images || (product.image_url ? [product.image_url] : []);
+  const images = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
 
   const variants = {
     regular: product.variants?.regular ?? { dimensions: '14" x 12"', price: product.price, original_price: product.original_price },
@@ -139,15 +141,15 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product, rela
             </li>
             <li className="text-white/20">/</li>
             <li>
-              <Link href="/collections" className="hover:text-primary transition-colors">
+              <button onClick={() => router.back()} className="hover:text-primary transition-colors">
                 Shop
-              </Link>
+              </button>
             </li>
             <li className="text-white/20">/</li>
             <li>
-              <Link href={`/collections/${product.category.toLowerCase()}`} className="hover:text-primary transition-colors">
+              <button onClick={() => router.back()} className="hover:text-primary transition-colors">
                 {product.category}
-              </Link>
+              </button>
             </li>
             <li className="text-white/20">/</li>
             <li className="text-white">{product.title}</li>
@@ -241,12 +243,12 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product, rela
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="flex flex-col lg:overflow-y-auto lg:max-h-[calc(100vh-180px)] lg:pr-1"
+            className="flex flex-col lg:pr-1"
           >
-            <span className="text-[10px] font-mono text-primary uppercase tracking-[0.3em] mb-3">{product.category}</span>
-            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-6">{product.title}</h1>
+            <span className="text-xs font-mono text-primary uppercase tracking-[0.3em] mb-2">{product.category}</span>
+            <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter mb-4">{product.title}</h1>
 
-            <div className="flex items-baseline gap-3 mb-2">
+            <div className="flex items-baseline gap-3 mb-1">
               <span className="text-3xl font-mono font-black text-primary">{formatPrice(finalPrice)}</span>
               {finalOriginalPrice && <span className="text-lg font-mono text-text-muted line-through">{formatPrice(finalOriginalPrice)}</span>}
               {savings > 0 && (
@@ -256,20 +258,20 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product, rela
               )}
             </div>
             {product.original_price && (
-              <div className="mb-6">
+              <div className="mb-4">
                 <span className="inline-flex text-[10px] font-black bg-primary text-black px-3 py-1.5 rounded-full uppercase tracking-wider">
                   EXTRA 20% OFF - USE COUPON FIRSTSIGN
                 </span>
               </div>
             )}
 
-            <p className="text-white/80 text-sm leading-relaxed mb-8 max-w-lg">Product color may slightly vary from the images due to the difference in lighting.</p>
+            <p className="text-white/80 text-xs leading-relaxed mb-6 max-w-lg">Product color may slightly vary from the images due to the difference in lighting.</p>
 
             {/* Size Selector */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs font-mono uppercase tracking-widest text-text-muted">Size</span>
-                <span className="text-[10px] font-mono text-primary">{(currentVariant.dimensions?.replace(/""+/g, '"') || '') + ' inches'}</span>
+                <span className="text-[10px] font-mono text-primary">{(currentVariant.dimensions?.replace(/""+/g, '"') || '')}</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {[
@@ -451,7 +453,7 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product, rela
 
       {/* Sticky Mobile Add to Cart */}
       {product.in_stock && (
-        <div className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-md border-t border-white/10 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] lg:hidden z-50">
+        <div className="fixed bottom-0 left-0 right-0 bg-black/90 backdrop-blur-md border-t border-white/10 px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:hidden z-50">
           <div className="flex items-center gap-4">
             <div className="flex-1">
               <p className="text-lg font-mono font-black text-primary">{formatPrice(finalPrice)}</p>

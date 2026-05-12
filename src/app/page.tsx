@@ -42,9 +42,9 @@ export default async function Home() {
               { icon: ShieldCheck, title: "1Y Warranty" },
               { icon: Star, title: "Easy Install" },
             ].map((usp, i) => (
-              <div key={i} className="flex items-center gap-2 bg-surface/50 border border-white/5 rounded-full px-3 py-2 shrink-0">
+              <div key={i} className="flex items-center gap-2 bg-surface/50 border border-white/5 rounded-full px-3 py-2.5 shrink-0">
                 <usp.icon className="w-3.5 h-3.5 text-primary shrink-0" />
-                <span className="text-[10px] font-black uppercase tracking-wide whitespace-nowrap">{usp.title}</span>
+                <span className="text-xs font-black uppercase tracking-wide whitespace-nowrap">{usp.title}</span>
               </div>
             ))}
           </div>
@@ -60,7 +60,7 @@ export default async function Home() {
                 <usp.icon className="w-6 h-6 text-primary shrink-0" />
                 <div>
                   <h4 className="text-sm font-black uppercase tracking-wide">{usp.title}</h4>
-                  <p className="text-[10px] text-text-muted mt-0.5">{usp.desc}</p>
+                  <p className="text-xs text-text-muted mt-0.5">{usp.desc}</p>
                 </div>
               </div>
             ))}

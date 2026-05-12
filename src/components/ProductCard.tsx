@@ -91,7 +91,7 @@ const ProductCard = React.memo(({ product, useTransition = false }: ProductCardP
           {product.in_stock && (
             <button
               onClick={handleQuickAdd}
-              className="absolute bottom-2 right-2 bg-white text-black w-8 h-8 rounded-full flex items-center justify-center hover:bg-primary hover:scale-110 transition-all shadow-lg"
+              className="absolute bottom-2 right-2 bg-white text-black w-10 h-10 rounded-full flex items-center justify-center hover:bg-primary hover:scale-110 transition-all shadow-lg"
               aria-label={`Quick add ${product.title} to cart`}
             >
               <ShoppingBag className="w-4 h-4" />
@@ -122,7 +122,7 @@ const ProductCard = React.memo(({ product, useTransition = false }: ProductCardP
         <div className="flex flex-col flex-1">
           <div className="mb-2">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[9px] font-mono text-primary uppercase tracking-[0.2em]">
+              <span className="text-[10px] font-mono text-primary uppercase tracking-[0.2em]">
                 {product.category}
               </span>
             </div>

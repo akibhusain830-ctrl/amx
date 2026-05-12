@@ -7,7 +7,7 @@ import ProductCard from "@/components/ProductCard";
 import { Product } from "@/lib/products";
 import { useProductStore } from "@/store/productStore";
 
-const PAGE_SIZE = 8;
+const LOAD_MORE_SIZE = 16;
 
 type SortKey = "Newest" | "Price: Low to High" | "Price: High to Low" | "Alphabetical";
 
@@ -18,84 +18,116 @@ const SORT_OPTIONS: { key: SortKey; label: string; desc: string }[] = [
   { key: "Alphabetical",        label: "Alphabetical",      desc: "A to Z" },
 ];
 
+// Read sessionStorage synchronously at module init time — before any render
+// This runs once when the module is first loaded (client-side only)
+function readSS() {
+  if (typeof window === "undefined") return { search: "", category: "All", sort: "Newest" as SortKey, limit: LOAD_MORE_SIZE, scroll: 0 };
+  return {
+    search:   sessionStorage.getItem("col_search")   ?? "",
+    category: sessionStorage.getItem("col_category") ?? "All",
+    sort:     (sessionStorage.getItem("col_sort") as SortKey) ?? "Newest",
+    limit:    parseInt(sessionStorage.getItem("col_limit") ?? String(LOAD_MORE_SIZE)),
+    scroll:   parseInt(sessionStorage.getItem("col_scroll") ?? "0"),
+  };
+}
+
 export default function CollectionsPage() {
   const { products, isLoading, fetchProducts } = useProductStore();
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [sortBy, setSortBy] = useState<SortKey>("Newest");
-  const [sortOpen, setSortOpen] = useState(false);
-  const [isRestoring, setIsRestoring] = useState(true);
-  const [page, setPage] = useState(1);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const sentinelRef = useRef<HTMLDivElement>(null);
 
+  // ── Initialise state directly from sessionStorage ─────────────────────────
+  // By passing an initialiser function to useState, the value is read once
+  // synchronously on the very first render — no async state update needed.
+  const [searchQuery,      setSearchQuery]      = useState(() => readSS().search);
+  const [selectedCategory, setSelectedCategory] = useState(() => readSS().category);
+  const [sortBy,           setSortBy]           = useState<SortKey>(() => readSS().sort);
+  const [limit,            setLimit]            = useState(() => readSS().limit);
+
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [sortOpen,         setSortOpen]         = useState(false);
+  const [isLoadingMore,    setIsLoadingMore]    = useState(false);
+  const [scrollReady,      setScrollReady]      = useState(false);
+
+  const sentinelRef        = useRef<HTMLDivElement>(null);
+  const scrollAttemptedRef = useRef(false);
+
+  // ── Fetch products on mount ───────────────────────────────────────────────
   useEffect(() => {
-    const savedSearch = sessionStorage.getItem("collections_search");
-    const savedCategory = sessionStorage.getItem("collections_category");
-    const savedSort = sessionStorage.getItem("collections_sort");
-    if (savedSearch) setSearchQuery(savedSearch);
-    if (savedCategory) setSelectedCategory(savedCategory);
-    if (savedSort) setSortBy(savedSort as SortKey);
     fetchProducts();
   }, [fetchProducts]);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!isRestoring) sessionStorage.setItem("collections_scroll_pos", window.scrollY.toString());
-    };
-    sessionStorage.setItem("collections_search", searchQuery);
-    sessionStorage.setItem("collections_category", selectedCategory);
-    sessionStorage.setItem("collections_sort", sortBy);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [searchQuery, selectedCategory, sortBy, isRestoring]);
+  // ── Persist state to sessionStorage ──────────────────────────────────────
+  useEffect(() => { sessionStorage.setItem("col_search",   searchQuery);   }, [searchQuery]);
+  useEffect(() => { sessionStorage.setItem("col_category", selectedCategory); }, [selectedCategory]);
+  useEffect(() => { sessionStorage.setItem("col_sort",     sortBy);        }, [sortBy]);
 
+  // ── Track scroll position ─────────────────────────────────────────────────
   useEffect(() => {
-    let result = products;
-    if (searchQuery) result = result.filter(p =>
-      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.category.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    if (selectedCategory !== "All") result = result.filter(p => p.category === selectedCategory);
-    if (sortBy === "Price: Low to High") result = [...result].sort((a, b) => a.price - b.price);
-    else if (sortBy === "Price: High to Low") result = [...result].sort((a, b) => b.price - a.price);
-    else if (sortBy === "Alphabetical") result = [...result].sort((a, b) => a.title.localeCompare(b.title));
+    const onScroll = () => sessionStorage.setItem("col_scroll", String(Math.round(window.scrollY)));
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // ── Filter + sort ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    let result = [...products];
+    if (searchQuery)
+      result = result.filter(p =>
+        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.category.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    if (selectedCategory !== "All")
+      result = result.filter(p => p.category === selectedCategory);
+    if (sortBy === "Price: Low to High")      result.sort((a, b) => a.price - b.price);
+    else if (sortBy === "Price: High to Low") result.sort((a, b) => b.price - a.price);
+    else if (sortBy === "Alphabetical")       result.sort((a, b) => a.title.localeCompare(b.title));
     setFilteredProducts(result);
-    setPage(1);
   }, [searchQuery, selectedCategory, sortBy, products]);
 
-  useLayoutEffect(() => {
-    if (filteredProducts.length > 0 && isRestoring) {
-      const savedScrollPos = sessionStorage.getItem("collections_scroll_pos");
-      if (savedScrollPos) {
-        const id = setTimeout(() => { window.scrollTo({ top: parseInt(savedScrollPos), behavior: "auto" }); setIsRestoring(false); }, 150);
-        return () => clearTimeout(id);
-      } else setIsRestoring(false);
-    } else if (!isLoading && filteredProducts.length === 0 && isRestoring) setIsRestoring(false);
-  }, [filteredProducts, isRestoring, isLoading]);
-
-  const categories = ["All", ...Array.from(new Set(products.map(p => p.category)))];
-  const visible = filteredProducts.slice(0, page * PAGE_SIZE);
+  // ── Compute visible slice ─────────────────────────────────────────────────
+  // `limit` was initialised from sessionStorage synchronously, so on the very
+  // first render after back-navigation this already has the correct value.
+  const visible = filteredProducts.slice(0, limit);
   const hasMore = visible.length < filteredProducts.length;
-  const currentSort = SORT_OPTIONS.find(o => o.key === sortBy)!;
 
-  // Infinite scroll
+  // ── Persist limit (exact visible count) ──────────────────────────────────
+  useEffect(() => {
+    sessionStorage.setItem("col_limit", String(visible.length));
+  }, [visible.length]);
+
+  // ── Scroll restoration ────────────────────────────────────────────────────
+  // useLayoutEffect fires synchronously after DOM mutations are committed
+  // but before the browser paints — so scrollHeight is already correct.
+  useLayoutEffect(() => {
+    if (scrollAttemptedRef.current)    return;
+    if (visible.length === 0)          return; // nothing rendered yet
+
+    scrollAttemptedRef.current = true;
+    const target = parseInt(sessionStorage.getItem("col_scroll") ?? "0");
+    if (target > 0) {
+      window.scrollTo({ top: target, behavior: "auto" });
+    }
+    setScrollReady(true);
+  }); // no deps — runs after every render, ref guards against repeat
+
+  // ── Infinite scroll — only after restoration ──────────────────────────────
   useEffect(() => {
     const sentinel = sentinelRef.current;
-    if (!sentinel || !hasMore) return;
+    if (!sentinel || !hasMore || !scrollReady) return;
     const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !isLoadingMore) {
+      ([entry]) => {
+        if (entry.isIntersecting && !isLoadingMore) {
           setIsLoadingMore(true);
-          setTimeout(() => { setPage(p => p + 1); setIsLoadingMore(false); }, 500);
+          setTimeout(() => { setLimit(l => l + LOAD_MORE_SIZE); setIsLoadingMore(false); }, 300);
         }
       },
-      { rootMargin: "200px" }
+      { rootMargin: "400px" }
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasMore, isLoadingMore]);
+  }, [hasMore, isLoadingMore, scrollReady]);
+
+  const categories  = ["All", ...Array.from(new Set(products.map(p => p.category)))];
+  const currentSort = SORT_OPTIONS.find(o => o.key === sortBy)!;
 
   return (
     <main className="min-h-screen bg-black selection:bg-primary/30 selection:text-primary">
@@ -113,7 +145,7 @@ export default function CollectionsPage() {
               type="text"
               placeholder="Search products..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setLimit(LOAD_MORE_SIZE); }}
               className="w-full bg-surface border border-white/10 rounded-full pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors"
             />
           </div>
@@ -123,8 +155,8 @@ export default function CollectionsPage() {
               {categories.map(cat => (
                 <button
                   key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`shrink-0 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors ${
+                  onClick={() => { setSelectedCategory(cat); setLimit(LOAD_MORE_SIZE); }}
+                  className={`shrink-0 px-4 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-colors ${
                     selectedCategory === cat ? "bg-primary text-black" : "bg-surface border border-white/10 text-white hover:border-primary/50"
                   }`}
                 >
@@ -133,7 +165,6 @@ export default function CollectionsPage() {
               ))}
             </div>
 
-            {/* Premium Sort Dropdown */}
             <div className="relative shrink-0">
               <button
                 onClick={() => setSortOpen(o => !o)}
@@ -163,7 +194,7 @@ export default function CollectionsPage() {
                       return (
                         <button
                           key={opt.key}
-                          onClick={() => { setSortBy(opt.key); setSortOpen(false); }}
+                          onClick={() => { setSortBy(opt.key); setSortOpen(false); setLimit(LOAD_MORE_SIZE); }}
                           className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-150 text-left group ${
                             isActive ? "bg-primary/10 border border-primary/20" : "border border-transparent hover:bg-white/[0.04]"
                           }`}
@@ -201,37 +232,39 @@ export default function CollectionsPage() {
           </div>
         ) : filteredProducts.length > 0 ? (
           <>
-            <div className={`grid grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-6 sm:gap-x-6 sm:gap-y-12 transition-opacity duration-300 ${isRestoring ? "opacity-0" : "opacity-100"}`}>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-6 sm:gap-x-6 sm:gap-y-12">
               {visible.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
 
-            {/* Sentinel + Loader */}
-            <div ref={sentinelRef} className="mt-16 flex flex-col items-center gap-3">
-              {isLoadingMore && (
-                <div className="flex flex-col items-center gap-3 py-4">
-                  <div className="relative w-10 h-10">
-                    <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
-                    <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
-                    <div className="absolute inset-[6px] rounded-full bg-primary/10" />
+            {/* Sentinel — only mounted after scroll restoration */}
+            {scrollReady && (
+              <div ref={sentinelRef} className="mt-16 flex flex-col items-center gap-3">
+                {isLoadingMore && (
+                  <div className="flex flex-col items-center gap-3 py-4">
+                    <div className="relative w-10 h-10">
+                      <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
+                      <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
+                      <div className="absolute inset-[6px] rounded-full bg-primary/10" />
+                    </div>
+                    <p className="text-[10px] font-mono text-text-muted uppercase tracking-widest">Loading more...</p>
                   </div>
-                  <p className="text-[10px] font-mono text-text-muted uppercase tracking-widest">Loading more...</p>
-                </div>
-              )}
-              {!hasMore && !isLoadingMore && filteredProducts.length > PAGE_SIZE && (
-                <p className="text-text-muted text-xs font-mono tracking-widest py-4">
-                  — You&apos;ve seen all {filteredProducts.length} designs —
-                </p>
-              )}
-            </div>
+                )}
+                {!hasMore && !isLoadingMore && filteredProducts.length > LOAD_MORE_SIZE && (
+                  <p className="text-text-muted text-xs font-mono tracking-widest py-4">
+                    — You&apos;ve seen all {filteredProducts.length} designs —
+                  </p>
+                )}
+              </div>
+            )}
           </>
         ) : (
           <div className="text-center py-24 bg-surface/30 rounded-3xl border border-dashed border-white/10">
             <h3 className="text-xl font-black uppercase tracking-tight mb-2">No products found</h3>
             <p className="text-text-muted text-sm mb-6">Try adjusting your filters or search query.</p>
             <button
-              onClick={() => { setSearchQuery(""); setSelectedCategory("All"); setSortBy("Newest"); }}
+              onClick={() => { setSearchQuery(""); setSelectedCategory("All"); setSortBy("Newest"); setLimit(LOAD_MORE_SIZE); }}
               className="text-primary text-xs font-black uppercase tracking-widest border-b border-primary pb-1"
             >
               Clear All Filters

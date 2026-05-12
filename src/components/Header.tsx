@@ -90,15 +90,17 @@ const Header = () => {
 
   const displayName = user?.user_metadata?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "Account";
   const navLinks = [
-    { href: "/collections",          label: "Shop All",   match: "/collections",          color: "#C6FF00", bg: "rgba(198,255,0,0.12)" },
-    { href: "/collections/cafe",     label: "Cafe",      match: "/collections/cafe",      color: "#FF9500", bg: "rgba(255,149,0,0.12)" },
-    { href: "/collections/aesthetic",label: "Aesthetic", match: "/collections/aesthetic", color: "#BF5FFF", bg: "rgba(191,95,255,0.12)" },
-    { href: "/collections/love",     label: "Love",      match: "/collections/love",      color: "#FF007A", bg: "rgba(255,0,122,0.12)" },
-    { href: "/collections/wings",    label: "Wings",     match: "/collections/wings",     color: "#00F0FF", bg: "rgba(0,240,255,0.12)" },
-    { href: "/collections/gaming",   label: "Gaming",    match: "/collections/gaming",    color: "#4D7CFF", bg: "rgba(77,124,255,0.12)" },
-    { href: "/collections/cars",     label: "Cars",      match: "/collections/cars",      color: "#FF4500", bg: "rgba(255,69,0,0.12)" },
-    { href: "/collections/under-4000",label: "Under 4000",match: "/collections/under-4000",color: "#36F4A4", bg: "rgba(54,244,164,0.12)" },
+    { href: "/customizer",            label: "✦ Customise", match: "/customizer",            color: "#C6FF00", bg: "rgba(198,255,0,0.12)" },
+    { href: "/collections",           label: "Shop All",    match: "/collections",            color: "#C6FF00", bg: "rgba(198,255,0,0.12)" },
+    { href: "/collections/cafe",      label: "Cafe",        match: "/collections/cafe",       color: "#FF9500", bg: "rgba(255,149,0,0.12)" },
+    { href: "/collections/aesthetic", label: "Aesthetic",   match: "/collections/aesthetic",  color: "#BF5FFF", bg: "rgba(191,95,255,0.12)" },
+    { href: "/collections/love",      label: "Love",        match: "/collections/love",       color: "#FF007A", bg: "rgba(255,0,122,0.12)" },
+    { href: "/collections/wings",     label: "Wings",       match: "/collections/wings",      color: "#00F0FF", bg: "rgba(0,240,255,0.12)" },
+    { href: "/collections/gaming",    label: "Gaming",      match: "/collections/gaming",     color: "#4D7CFF", bg: "rgba(77,124,255,0.12)" },
+    { href: "/collections/cars",      label: "Cars",        match: "/collections/cars",       color: "#FF4500", bg: "rgba(255,69,0,0.12)" },
+    { href: "/collections/under-4000",label: "Under 4000",  match: "/collections/under-4000", color: "#36F4A4", bg: "rgba(54,244,164,0.12)" },
   ];
+
 
   return (
     <>
@@ -128,13 +130,13 @@ const Header = () => {
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,transparent_0%,rgba(198,255,0,0.95)_18%,rgba(0,240,255,0.65)_50%,rgba(198,255,0,0.95)_82%,transparent_100%)]" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-10 bg-[radial-gradient(ellipse_at_top,rgba(198,255,0,0.28),transparent_65%)]" />
         
-        <div className="container mx-auto px-4 md:px-6 h-20 flex items-center justify-between gap-2">
+        <div className="container mx-auto px-3 sm:px-4 md:px-6 h-20 flex items-center justify-between gap-2">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group shrink-0">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-primary rounded-full flex items-center justify-center neon-bloom-lime transition-transform group-hover:scale-110">
-              <Zap className="text-black w-4 h-4 md:w-6 md:h-6 fill-current" />
+          <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group shrink-0">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-primary rounded-full flex items-center justify-center neon-bloom-lime transition-transform group-hover:scale-110">
+              <Zap className="text-black w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-6 md:h-6 fill-current" />
             </div>
-            <span className="text-xl md:text-2xl font-black tracking-tighter font-outfit uppercase">
+            <span className="text-lg sm:text-xl md:text-2xl font-black tracking-tighter font-outfit uppercase">
               AMX<span className="text-primary">Signs</span>
             </span>
           </Link>
@@ -174,13 +176,13 @@ const Header = () => {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-1 md:gap-4 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 md:gap-4 shrink-0">
             {!user ? (
-              <Link href="/auth" className="hover:text-primary transition-colors p-2">
+              <Link href="/auth" className="hidden xl:block hover:text-primary transition-colors p-2">
                 <User className="w-5 h-5" />
               </Link>
             ) : (
-              <div className="relative" ref={userMenuRef}>
+              <div className="relative hidden xl:block" ref={userMenuRef}>
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-sm"
@@ -233,25 +235,33 @@ const Header = () => {
             )}
 
             <button
-              className="relative p-2 hover:text-primary transition-colors"
+              className="relative p-2 md:p-3 hover:text-primary transition-colors"
               onClick={openCart}
               aria-label={`Open cart, ${totalItems} items`}
             >
-              <ShoppingCart className="w-6 h-6" />
+              <ShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-black text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                <span className="absolute top-0 right-0 md:-top-1 md:-right-1 bg-primary text-black text-[9px] md:text-[10px] font-bold w-3.5 h-3.5 md:w-4 md:h-4 rounded-full flex items-center justify-center">
                   {totalItems}
                 </span>
               )}
             </button>
 
             <button
-              className="xl:hidden p-2 hover:text-primary transition-colors"
+              className="xl:hidden p-2 md:p-3 hover:text-primary transition-colors"
               onClick={() => setMenuOpen(true)}
               aria-label="Open menu"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5 md:w-6 md:h-6" />
             </button>
+
+            <Link
+              href="/customizer"
+              className="flex xl:hidden items-center justify-center gap-1 bg-primary text-black px-3 py-1.5 sm:px-4 sm:py-2 rounded-full font-black text-[9px] sm:text-[10px] tracking-widest sm:tracking-[0.15em] uppercase hover:scale-105 transition-transform active:scale-95 neon-bloom-lime shadow-[0_0_10px_rgba(198,255,0,0.4)] shrink-0"
+            >
+              <Zap className="w-3 h-3 fill-current" />
+              <span>Customise</span>
+            </Link>
 
             <Link
               href="/collections"
@@ -262,7 +272,13 @@ const Header = () => {
           </div>
         </div>
       </header>
-      <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+      <MobileMenu 
+        isOpen={menuOpen} 
+        onClose={() => setMenuOpen(false)} 
+        user={user}
+        isAdmin={isAdmin}
+        onSignOut={handleSignOut}
+      />
     </>
   );
 };

@@ -51,7 +51,7 @@ const CartDrawer = () => {
             className="fixed top-0 right-0 h-full w-full max-w-md bg-surface border-l border-white/10 z-[70] flex flex-col"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-white/10">
+            <div className="flex items-center justify-between p-5 border-b border-white/10">
               <div className="flex items-center gap-3">
                 <ShoppingBag className="w-5 h-5 text-primary" />
                 <h2 className="text-lg font-black uppercase tracking-tighter">
@@ -63,7 +63,7 @@ const CartDrawer = () => {
               </div>
               <button
                 onClick={closeCart}
-                className="p-2 hover:text-primary transition-colors"
+                className="p-3 hover:text-primary transition-colors -mr-1"
                 aria-label="Close cart"
               >
                 <X className="w-5 h-5" />
@@ -89,13 +89,20 @@ const CartDrawer = () => {
                   </button>
                 </div>
               ) : (
-                items.map(({ product, quantity, selectedSize, selectedPrice }) => (
+                items.map(({ product, quantity, selectedSize, selectedPrice, customDetails, cartItemId }) => (
                   <div
-                    key={product.id}
+                    key={cartItemId ?? `${product.id}-${selectedSize}`}
                     className="flex flex-col xs:flex-row gap-4 bg-black/40 border border-white/5 rounded-2xl p-4"
                   >
                     <div className="w-20 h-20 bg-surface rounded-xl border border-white/5 flex items-center justify-center shrink-0 overflow-hidden">
-                      {product.image_url ? (
+                      {customDetails ? (
+                        <span
+                          className="text-2xl leading-none"
+                          style={{ fontFamily: customDetails.fontFamily, color: customDetails.colorHex, textShadow: `0 0 12px ${customDetails.colorHex}` }}
+                        >
+                          {customDetails.text.slice(0, 2) || "A"}
+                        </span>
+                      ) : product.image_url ? (
                         <div className="relative w-full h-full">
                           <Image src={product.image_url} alt={product.title} fill className="object-cover" sizes="80px" />
                         </div>
@@ -107,48 +114,58 @@ const CartDrawer = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
-                        <div>
+                        <div className="min-w-0">
                           <p className="text-[10px] font-mono text-primary uppercase tracking-widest">
-                            {product.category}
+                            {customDetails ? "Custom Sign" : product.category}
                           </p>
                           <h3 className="text-sm font-black uppercase tracking-tight truncate">
-                            {product.title}
+                            {customDetails ? `"${customDetails.text}"` : product.title}
                           </h3>
-                          <span className="text-[10px] font-mono text-text-muted/60 uppercase">Size: {selectedSize}</span>
+                          {customDetails ? (
+                            <div className="mt-1 space-y-0.5">
+                              <span className="text-[10px] font-mono text-text-muted/60 uppercase block">Size: {selectedSize} · {customDetails.dimensions}</span>
+                              <span className="text-[10px] font-mono text-text-muted/60 uppercase block">Font: {customDetails.fontName} · Color: {customDetails.color}</span>
+                              <span className="text-[10px] font-mono text-text-muted/60 uppercase block">Backing: {customDetails.backing}</span>
+                            </div>
+                          ) : (
+                            <span className="text-[10px] font-mono text-text-muted/60 uppercase">Size: {selectedSize}</span>
+                          )}
                         </div>
                         <button
-                          onClick={() => removeItem(product.id, selectedSize)}
-                          className="p-1 hover:text-accent-pink transition-colors shrink-0"
-                          aria-label={`Remove ${product.title} from cart`}
+                          onClick={() => removeItem(product.id, selectedSize, cartItemId)}
+                          className="p-2 hover:text-accent-pink transition-colors shrink-0 -mt-1 -mr-1"
+                          aria-label={`Remove from cart`}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                       <div className="flex items-center justify-between mt-3 gap-3">
-                        <div className="flex items-center gap-2 bg-black/60 rounded-full border border-white/10">
-                          <button
-                            onClick={() =>
-                              updateQuantity(product.id, selectedSize, quantity - 1)
-                            }
-                            className="p-2 hover:text-primary transition-colors"
-                            aria-label="Decrease quantity"
-                          >
-                            <Minus className="w-3 h-3" />
-                          </button>
-                          <span className="text-xs font-mono w-4 text-center">
-                            {quantity}
-                          </span>
-                          <button
-                            onClick={() =>
-                              updateQuantity(product.id, selectedSize, quantity + 1)
-                            }
-                            className="p-2 hover:text-primary transition-colors"
-                            aria-label="Increase quantity"
-                          >
-                            <Plus className="w-3 h-3" />
-                          </button>
-                        </div>
-                        <p className="text-sm font-mono font-bold whitespace-nowrap">
+                        {!customDetails && (
+                          <div className="flex items-center gap-1 bg-black/60 rounded-full border border-white/10">
+                            <button
+                              onClick={() =>
+                                updateQuantity(product.id, selectedSize, quantity - 1)
+                              }
+                              className="p-2.5 hover:text-primary transition-colors"
+                              aria-label="Decrease quantity"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </button>
+                            <span className="text-xs font-mono w-5 text-center">
+                              {quantity}
+                            </span>
+                            <button
+                              onClick={() =>
+                                updateQuantity(product.id, selectedSize, quantity + 1)
+                              }
+                              className="p-2.5 hover:text-primary transition-colors"
+                              aria-label="Increase quantity"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
+                        )}
+                        <p className="text-sm font-mono font-bold whitespace-nowrap ml-auto">
                           {formatPrice(selectedPrice * quantity)}
                         </p>
                       </div>
