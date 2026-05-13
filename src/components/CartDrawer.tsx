@@ -148,46 +148,69 @@ export default function CartDrawer() {
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error);
 
-      const shippingAddress = `${form.address}, ${form.city}, ${form.state} - ${form.pincode}`;
-
-      setTimeout(async () => {
-        try {
-          const verifyRes = await fetch("/api/razorpay/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              razorpayOrderId: orderData.orderId,
-              razorpayPaymentId: `pay_mock_${Date.now()}`,
-              razorpaySignature: "mock_signature",
-              customerName: form.name,
-              customerEmail: form.email,
-              customerPhone: form.phone,
-              shippingAddress,
-              totalAmount: subtotal,
-              discountAmount: appliedCoupon ? appliedCoupon.discount : 0,
-              couponCode: appliedCoupon ? appliedCoupon.code : null,
-              items: items.map(i => ({
-                productId: i.product.id,
-                quantity: i.quantity,
-                priceAtPurchase: i.selectedPrice,
-                selectedSize: i.selectedSize,
-              })),
-            }),
-          });
-          
-          const verifyData = await verifyRes.json();
-          if (verifyData.verified) {
-            clearCart();
-            setOrderId(verifyData.orderId);
-            setStep("success");
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "AMX Signs",
+        description: "Premium Neon Signs",
+        order_id: orderData.orderId,
+        handler: async function (response: any) {
+          try {
+            setPaymentLoading(true);
+            const verifyRes = await fetch("/api/razorpay/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+                customerName: form.name,
+                customerEmail: form.email,
+                customerPhone: form.phone,
+                shippingAddress: `${form.address}, ${form.city}, ${form.state} - ${form.pincode}`,
+                totalAmount: subtotal,
+                discountAmount: appliedCoupon ? appliedCoupon.discount : 0,
+                couponCode: appliedCoupon ? appliedCoupon.code : null,
+                items: items.map(i => ({
+                  productId: i.product.id,
+                  quantity: i.quantity,
+                  priceAtPurchase: i.selectedPrice,
+                  selectedSize: i.selectedSize,
+                })),
+              }),
+            });
+            
+            const verifyData = await verifyRes.json();
+            if (verifyData.verified) {
+              clearCart();
+              setOrderId(verifyData.orderId);
+              setStep("success");
+            }
+          } catch (e) {
+            console.error("Payment verify error", e);
+          } finally {
+            setPaymentLoading(false);
           }
-        } catch (e) {
-          console.error("Payment verify error", e);
-        } finally {
-          setPaymentLoading(false);
+        },
+        prefill: {
+          name: form.name,
+          email: form.email,
+          contact: form.phone,
+        },
+        theme: {
+          color: "#BAFF00",
+        },
+        modal: {
+          ondismiss: function() {
+            setPaymentLoading(false);
+          }
         }
-      }, 1500);
-    } catch (err) {
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (err: any) {
       console.error("Payment failed", err);
       setPaymentLoading(false);
     }
