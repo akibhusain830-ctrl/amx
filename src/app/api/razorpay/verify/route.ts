@@ -5,10 +5,7 @@ import { Resend } from "resend";
 
 export async function POST(request: NextRequest) {
   try {
-    if (!process.env.RESEND_API_KEY) {
-      console.error("RESEND_API_KEY is missing");
-    }
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
     const body = await request.json();
     const {
@@ -89,25 +86,27 @@ export async function POST(request: NextRequest) {
     }
 
     // Send Order Confirmation Email
-    try {
-      await resend.emails.send({
-        from: "AMX Signs <orders@amxsigns.com>",
-        to: [customerEmail],
-        subject: `Order Confirmed: #${order.id.slice(0, 8).toUpperCase()}`,
-        html: `
-          <div style="font-family: sans-serif; color: #111;">
-            <h1 style="color: #BAFF00;">Thank you for your order, ${customerName}!</h1>
-            <p>We have successfully received your payment of INR ${totalAmount}. Our team is now preparing your custom neon magic.</p>
-            <p>Your Order ID is: <strong>${order.id}</strong></p>
-            <hr style="border: 1px solid #eee; margin: 20px 0;" />
-            <h3>Delivery Details</h3>
-            <p>${shippingAddress}</p>
-            <p>If you have any questions, simply reply to this email!</p>
-          </div>
-        `,
-      });
-    } catch (emailError) {
-      console.error("Failed to send order confirmation email:", emailError);
+    if (resend) {
+      try {
+        await resend.emails.send({
+          from: "AMX Signs <orders@amxsigns.com>",
+          to: [customerEmail],
+          subject: `Order Confirmed: #${order.id.slice(0, 8).toUpperCase()}`,
+          html: `
+            <div style="font-family: sans-serif; color: #111;">
+              <h1 style="color: #BAFF00;">Thank you for your order, ${customerName}!</h1>
+              <p>We have successfully received your payment of INR ${totalAmount}. Our team is now preparing your custom neon magic.</p>
+              <p>Your Order ID is: <strong>${order.id}</strong></p>
+              <hr style="border: 1px solid #eee; margin: 20px 0;" />
+              <h3>Delivery Details</h3>
+              <p>${shippingAddress}</p>
+              <p>If you have any questions, simply reply to this email!</p>
+            </div>
+          `,
+        });
+      } catch (emailError) {
+        console.error("Failed to send order confirmation email:", emailError);
+      }
     }
 
     return NextResponse.json({ verified: true, orderId: order.id });
