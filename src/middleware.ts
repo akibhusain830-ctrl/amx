@@ -50,7 +50,7 @@ export async function middleware(request: NextRequest) {
     const isAdmin = 
       user.user_metadata?.role === 'admin' || 
       user.email === 'akibhusain830@gmail.com' || 
-      user.email === 'manasprbordoloi@gmail.com';
+      user.email === 'manasmanasprbordoloi@gmail.com';
     if (!isAdmin) {
       const url = request.nextUrl.clone()
       url.pathname = '/' // Redirect to home if unauthorized
