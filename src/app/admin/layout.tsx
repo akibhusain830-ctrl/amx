@@ -36,7 +36,9 @@ export default async function AdminLayout({
     .eq('id', user.id)
     .single()
 
-  if (profile?.role !== 'admin') {
+  const isSuperAdmin = user.email === 'akibhusain830@gmail.com' || user.email === 'manasprbordoloi@gmail.com';
+
+  if (profile?.role !== 'admin' && !isSuperAdmin) {
     redirect('/')
   }
 

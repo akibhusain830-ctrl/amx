@@ -47,7 +47,10 @@ export async function middleware(request: NextRequest) {
     }
     
     // Fallback: grant access if they are the owner or explicitly have the admin role
-    const isAdmin = user.user_metadata?.role === 'admin' || user.email === 'akibhusain830@gmail.com';
+    const isAdmin = 
+      user.user_metadata?.role === 'admin' || 
+      user.email === 'akibhusain830@gmail.com' || 
+      user.email === 'manasprbordoloi@gmail.com';
     if (!isAdmin) {
       const url = request.nextUrl.clone()
       url.pathname = '/' // Redirect to home if unauthorized
