@@ -185,17 +185,14 @@ const Header = () => {
               <div className="relative hidden xl:block" ref={userMenuRef}>
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-sm"
+                  className="flex items-center gap-2 p-1.5 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
                 >
-                  <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                  <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center">
                     <span className="text-black text-[10px] font-black uppercase">
                       {displayName[0]}
                     </span>
                   </div>
-                  <span className="hidden xl:block text-xs font-bold uppercase tracking-wider max-w-[80px] truncate">
-                    {displayName}
-                  </span>
-                  <ChevronDown className={`w-3 h-3 text-text-muted transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 text-text-muted mr-1 transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
                 </button>
 
                 {userMenuOpen && (
