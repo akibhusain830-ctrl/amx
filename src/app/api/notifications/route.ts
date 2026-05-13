@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   try {
     const ipHeader = req.headers.get("x-forwarded-for");
     const ip = ipHeader?.split(",")[0]?.trim() ?? "local";
-    if (isRateLimited(`notifications:${ip}`, 15, 60_000)) {
+    if (await isRateLimited(`notifications:${ip}`, 15, 60_000)) {
       return NextResponse.json({ success: false, error: "Too many requests" }, { status: 429 });
     }
 

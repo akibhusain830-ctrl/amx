@@ -8,7 +8,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export async function POST(req: NextRequest) {
   try {
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
-    if (isRateLimited(`restock:${ip}`, 10, 60_000)) {
+    if (await isRateLimited(`restock:${ip}`, 10, 60_000)) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 

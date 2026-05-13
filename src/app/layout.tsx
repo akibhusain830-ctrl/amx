@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
+import Footer from "@/components/Footer";
 import {
   Inter,
   Outfit,
@@ -75,8 +76,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
   return (
     <html lang="en" className="dark">
-      <body className={`${fontVars} bg-black text-white antialiased`}>
-        {children}
+      <body className={`${fontVars} bg-black text-white antialiased flex flex-col min-h-screen`}>
+        <div className="flex-grow">
+          {children}
+        </div>
+        <Footer />
         <CartDrawer />
         <WhatsAppWidget />
       </body>

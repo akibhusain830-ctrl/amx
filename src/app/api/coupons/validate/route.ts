@@ -25,7 +25,7 @@ const supabase = createClient(
 export async function POST(req: NextRequest) {
   try {
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
-    if (isRateLimited(`coupon-validate:${ip}`, 20, 60_000)) {
+    if (await isRateLimited(`coupon-validate:${ip}`, 20, 60_000)) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
 

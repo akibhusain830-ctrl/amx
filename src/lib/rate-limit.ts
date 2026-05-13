@@ -1,23 +1,25 @@
-const buckets = new Map<string, { count: number; resetAt: number }>();
+import { supabaseAdmin } from "./supabase-admin";
 
-export function isRateLimited(
+export async function isRateLimited(
   key: string,
   maxRequests: number,
   windowMs: number
-): boolean {
-  const now = Date.now();
-  const current = buckets.get(key);
-
-  if (!current || now > current.resetAt) {
-    buckets.set(key, { count: 1, resetAt: now + windowMs });
+): Promise<boolean> {
+  try {
+    const { data, error } = await supabaseAdmin.rpc("check_rate_limit", {
+      client_id: key,
+      max_reqs: maxRequests,
+      window_ms: windowMs,
+    });
+    
+    if (error) {
+      console.error("Rate limit error:", error);
+      return false; // Fail open to not block legitimate users if DB is slow
+    }
+    
+    return data === true;
+  } catch (err) {
+    console.error("Rate limit exception:", err);
     return false;
   }
-
-  if (current.count >= maxRequests) {
-    return true;
-  }
-
-  current.count += 1;
-  return false;
 }
-

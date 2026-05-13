@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/supabase-admin";
+import { Resend } from "resend";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const resend = new Resend(process.env.RESEND_API_KEY!);
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,11 +26,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing verification fields" }, { status: 400 });
     }
 
-    // Skipping signature verification since we are mocking Razorpay
-    // In production, you would use crypto.createHmac to verify the signature here.
+    const generatedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+      .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+      .digest("hex");
 
-    // Save order to DB
-    const { data: order, error: orderError } = await supabase
+    if (generatedSignature !== razorpaySignature) {
+      return NextResponse.json({ error: "Invalid payment signature" }, { status: 400 });
+    }
+
+    // Save order to DB using Service Role to bypass RLS
+    const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
       .insert({
         customer_name: customerName,
@@ -70,20 +74,42 @@ export async function POST(request: NextRequest) {
         selected_size: item.selectedSize,
       }));
 
-      const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
+      const { error: itemsError } = await supabaseAdmin.from("order_items").insert(orderItems);
       if (itemsError) {
         console.error("Order items save failed:", itemsError);
       }
     }
 
-    // Increment coupon used_count
+    // Increment coupon used_count securely
     if (couponCode) {
-      await supabase.rpc("increment_coupon_used_count", { coupon_code: couponCode });
+      await supabaseAdmin.rpc("increment_coupon_used_count", { coupon_code: couponCode });
+    }
+
+    // Send Order Confirmation Email
+    try {
+      await resend.emails.send({
+        from: "AMX Signs <orders@amxsigns.com>",
+        to: [customerEmail],
+        subject: `Order Confirmed: #${order.id.slice(0, 8).toUpperCase()}`,
+        html: `
+          <div style="font-family: sans-serif; color: #111;">
+            <h1 style="color: #BAFF00;">Thank you for your order, ${customerName}!</h1>
+            <p>We have successfully received your payment of INR ${totalAmount}. Our team is now preparing your custom neon magic.</p>
+            <p>Your Order ID is: <strong>${order.id}</strong></p>
+            <hr style="border: 1px solid #eee; margin: 20px 0;" />
+            <h3>Delivery Details</h3>
+            <p>${shippingAddress}</p>
+            <p>If you have any questions, simply reply to this email!</p>
+          </div>
+        `,
+      });
+    } catch (emailError) {
+      console.error("Failed to send order confirmation email:", emailError);
     }
 
     return NextResponse.json({ verified: true, orderId: order.id });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Payment verification failed:", error);
-    return NextResponse.json({ error: "Verification failed" }, { status: 500 });
+    return NextResponse.json({ error: error?.message || "Verification failed" }, { status: 500 });
   }
 }

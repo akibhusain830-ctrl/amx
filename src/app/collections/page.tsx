@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useLayoutEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useLayoutEffect, useRef } from "react";
 import { Search, SlidersHorizontal, ChevronDown } from "lucide-react";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
@@ -21,13 +21,12 @@ const SORT_OPTIONS: { key: SortKey; label: string; desc: string }[] = [
 // Read sessionStorage synchronously at module init time — before any render
 // This runs once when the module is first loaded (client-side only)
 function readSS() {
-  if (typeof window === "undefined") return { search: "", category: "All", sort: "Newest" as SortKey, limit: LOAD_MORE_SIZE, scroll: 0 };
+  if (typeof window === "undefined") return { search: "", category: "All", sort: "Newest" as SortKey, limit: LOAD_MORE_SIZE };
   return {
     search:   sessionStorage.getItem("col_search")   ?? "",
     category: sessionStorage.getItem("col_category") ?? "All",
     sort:     (sessionStorage.getItem("col_sort") as SortKey) ?? "Newest",
     limit:    parseInt(sessionStorage.getItem("col_limit") ?? String(LOAD_MORE_SIZE)),
-    scroll:   parseInt(sessionStorage.getItem("col_scroll") ?? "0"),
   };
 }
 
@@ -42,13 +41,11 @@ export default function CollectionsPage() {
   const [sortBy,           setSortBy]           = useState<SortKey>(() => readSS().sort);
   const [limit,            setLimit]            = useState(() => readSS().limit);
 
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [sortOpen,         setSortOpen]         = useState(false);
   const [isLoadingMore,    setIsLoadingMore]    = useState(false);
-  const [scrollReady,      setScrollReady]      = useState(false);
+  const [scrollReady,      setScrollReady]      = useState(true);
 
   const sentinelRef        = useRef<HTMLDivElement>(null);
-  const scrollAttemptedRef = useRef(false);
 
   // ── Fetch products on mount ───────────────────────────────────────────────
   useEffect(() => {
@@ -60,15 +57,9 @@ export default function CollectionsPage() {
   useEffect(() => { sessionStorage.setItem("col_category", selectedCategory); }, [selectedCategory]);
   useEffect(() => { sessionStorage.setItem("col_sort",     sortBy);        }, [sortBy]);
 
-  // ── Track scroll position ─────────────────────────────────────────────────
-  useEffect(() => {
-    const onScroll = () => sessionStorage.setItem("col_scroll", String(Math.round(window.scrollY)));
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
-  // ── Filter + sort ─────────────────────────────────────────────────────────
-  useEffect(() => {
+
+  const filteredProducts = useMemo(() => {
     let result = [...products];
     if (searchQuery)
       result = result.filter(p =>
@@ -76,11 +67,11 @@ export default function CollectionsPage() {
         p.category.toLowerCase().includes(searchQuery.toLowerCase())
       );
     if (selectedCategory !== "All")
-      result = result.filter(p => p.category === selectedCategory);
+      result = result.filter(p => p.category.toUpperCase() === selectedCategory.toUpperCase());
     if (sortBy === "Price: Low to High")      result.sort((a, b) => a.price - b.price);
     else if (sortBy === "Price: High to Low") result.sort((a, b) => b.price - a.price);
     else if (sortBy === "Alphabetical")       result.sort((a, b) => a.title.localeCompare(b.title));
-    setFilteredProducts(result);
+    return result;
   }, [searchQuery, selectedCategory, sortBy, products]);
 
   // ── Compute visible slice ─────────────────────────────────────────────────
@@ -94,20 +85,7 @@ export default function CollectionsPage() {
     sessionStorage.setItem("col_limit", String(visible.length));
   }, [visible.length]);
 
-  // ── Scroll restoration ────────────────────────────────────────────────────
-  // useLayoutEffect fires synchronously after DOM mutations are committed
-  // but before the browser paints — so scrollHeight is already correct.
-  useLayoutEffect(() => {
-    if (scrollAttemptedRef.current)    return;
-    if (visible.length === 0)          return; // nothing rendered yet
 
-    scrollAttemptedRef.current = true;
-    const target = parseInt(sessionStorage.getItem("col_scroll") ?? "0");
-    if (target > 0) {
-      window.scrollTo({ top: target, behavior: "auto" });
-    }
-    setScrollReady(true);
-  }); // no deps — runs after every render, ref guards against repeat
 
   // ── Infinite scroll — only after restoration ──────────────────────────────
   useEffect(() => {
@@ -126,7 +104,7 @@ export default function CollectionsPage() {
     return () => observer.disconnect();
   }, [hasMore, isLoadingMore, scrollReady]);
 
-  const categories  = ["All", ...Array.from(new Set(products.map(p => p.category)))];
+  const categories  = ["All", ...Array.from(new Set(products.map(p => p.category.toUpperCase())))];
   const currentSort = SORT_OPTIONS.find(o => o.key === sortBy)!;
 
   return (

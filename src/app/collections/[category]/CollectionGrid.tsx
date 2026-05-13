@@ -21,10 +21,8 @@ export default function CollectionGrid({ products }: { products: Product[] }) {
   const params   = useParams();
   const category = (params?.category as string) || "default";
 
-  // Keys derived from category — stable for the lifetime of this component
   const SK_SORT   = `cat_sort_${category}`;
   const SK_LIMIT  = `cat_limit_${category}`;
-  const SK_SCROLL = `cat_scroll_${category}`;
 
   // ── Initialise state synchronously from sessionStorage ────────────────────
   // useState initialiser runs once on first render — no async update needed.
@@ -37,20 +35,14 @@ export default function CollectionGrid({ products }: { products: Product[] }) {
 
   const [sortOpen,      setSortOpen]      = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [scrollReady,   setScrollReady]   = useState(false);
+  const [scrollReady,   setScrollReady]   = useState(true);
 
   const sentinelRef        = useRef<HTMLDivElement>(null);
-  const scrollAttemptedRef = useRef(false);
 
   // ── Persist sort + limit ──────────────────────────────────────────────────
   useEffect(() => { sessionStorage.setItem(SK_SORT, sort); }, [sort, SK_SORT]);
 
-  // ── Track scroll ──────────────────────────────────────────────────────────
-  useEffect(() => {
-    const onScroll = () => sessionStorage.setItem(SK_SCROLL, String(Math.round(window.scrollY)));
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [SK_SCROLL]);
+
 
   // ── Sort products ─────────────────────────────────────────────────────────
   const sorted = useMemo(() => {
@@ -70,23 +62,7 @@ export default function CollectionGrid({ products }: { products: Product[] }) {
     sessionStorage.setItem(SK_LIMIT, String(visible.length));
   }, [visible.length, SK_LIMIT]);
 
-  // ── Scroll restoration — fires once when products are ready ───────────────
-  useEffect(() => {
-    if (scrollAttemptedRef.current) return;
-    if (products.length === 0)      return;
 
-    scrollAttemptedRef.current = true;
-    const target = parseInt(sessionStorage.getItem(SK_SCROLL) ?? "0");
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        window.scrollTo({ top: target, behavior: "auto" });
-        setScrollReady(true);
-      });
-    });
-  // SK_SCROLL is stable — safe to omit from deps
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [products]);
 
   // ── Infinite scroll — only after restoration ──────────────────────────────
   useEffect(() => {

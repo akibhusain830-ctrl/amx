@@ -38,8 +38,25 @@ export async function middleware(request: NextRequest) {
     user = data.user;
   }
 
-  // Protect Admin and Profile routes
-  if (request.nextUrl.pathname.startsWith('/admin') || request.nextUrl.pathname.startsWith('/profile')) {
+  // Protect Admin routes with RBAC
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    if (!user) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/auth'
+      return NextResponse.redirect(url)
+    }
+    
+    // Fallback: grant access if they are the owner or explicitly have the admin role
+    const isAdmin = user.user_metadata?.role === 'admin' || user.email === 'akibhusain830@gmail.com';
+    if (!isAdmin) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/' // Redirect to home if unauthorized
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // Protect Profile routes
+  if (request.nextUrl.pathname.startsWith('/profile')) {
     if (!user) {
       const url = request.nextUrl.clone()
       url.pathname = '/auth'
