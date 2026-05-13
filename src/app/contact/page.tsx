@@ -1,3 +1,5 @@
+"use client";
+
 import Header from "@/components/Header";
 import { Mail, Phone, MapPin, Clock } from "lucide-react";
 

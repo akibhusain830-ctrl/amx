@@ -3,10 +3,13 @@ import crypto from "crypto";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
-
 export async function POST(request: NextRequest) {
   try {
+    if (!process.env.RESEND_API_KEY) {
+      console.error("RESEND_API_KEY is missing");
+    }
+    const resend = new Resend(process.env.RESEND_API_KEY);
+
     const body = await request.json();
     const {
       razorpayOrderId,

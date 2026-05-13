@@ -1,13 +1,10 @@
 import Header from "@/components/Header";
-import Image from "next/image";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import Hero from "@/components/Hero";
-import TrustBar from "@/components/TrustBar";
 import ProductCard from "@/components/ProductCard";
 import { getProducts, getTrendingProducts, getCategoryThumbnails } from "@/lib/products";
-import { ArrowRight, Star, ShieldCheck, Truck, Zap, Mail, MapPin, Phone, Camera, Play } from "lucide-react";
+import { Star, ShieldCheck, Truck, Zap } from "lucide-react";
 import Link from "next/link";
-import NewsletterForm from "@/components/NewsletterForm";
 import CategoryCard from "@/components/CategoryCard";
 
 export const revalidate = 60; // Revalidate every minute
@@ -22,7 +19,7 @@ export default async function Home() {
   products.forEach((p) => {
     categoryMap[p.category] = (categoryMap[p.category] || 0) + 1;
   });
-  const totalCount = products.length;
+
 
   return (
     <main className="min-h-screen bg-black selection:bg-primary/30 selection:text-primary">
