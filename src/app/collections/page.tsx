@@ -18,34 +18,36 @@ const SORT_OPTIONS: { key: SortKey; label: string; desc: string }[] = [
   { key: "Alphabetical",        label: "Alphabetical",      desc: "A to Z" },
 ];
 
-// Read sessionStorage synchronously at module init time — before any render
-// This runs once when the module is first loaded (client-side only)
-function readSS() {
-  if (typeof window === "undefined") return { search: "", category: "All", sort: "Newest" as SortKey, limit: LOAD_MORE_SIZE };
-  return {
-    search:   sessionStorage.getItem("col_search")   ?? "",
-    category: sessionStorage.getItem("col_category") ?? "All",
-    sort:     (sessionStorage.getItem("col_sort") as SortKey) ?? "Newest",
-    limit:    parseInt(sessionStorage.getItem("col_limit") ?? String(LOAD_MORE_SIZE)),
-  };
-}
 
 export default function CollectionsPage() {
   const { products, isLoading, fetchProducts } = useProductStore();
 
-  // ── Initialise state directly from sessionStorage ─────────────────────────
-  // By passing an initialiser function to useState, the value is read once
-  // synchronously on the very first render — no async state update needed.
-  const [searchQuery,      setSearchQuery]      = useState(() => readSS().search);
-  const [selectedCategory, setSelectedCategory] = useState(() => readSS().category);
-  const [sortBy,           setSortBy]           = useState<SortKey>(() => readSS().sort);
-  const [limit,            setLimit]            = useState(() => readSS().limit);
+  // ── Initialise state with server-consistent defaults ──────────────────────
+  const [searchQuery,      setSearchQuery]      = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [sortBy,           setSortBy]           = useState<SortKey>("Newest");
+  const [limit,            setLimit]            = useState(LOAD_MORE_SIZE);
 
   const [sortOpen,         setSortOpen]         = useState(false);
   const [isLoadingMore,    setIsLoadingMore]    = useState(false);
-  const [scrollReady,      setScrollReady]      = useState(true);
+  const [scrollReady,      setScrollReady]      = useState(false); // Start false to prevent scroll jump
 
   const sentinelRef        = useRef<HTMLDivElement>(null);
+
+  // ── Initial Restoration on Mount ──────────────────────────────────────────
+  useEffect(() => {
+    const search   = sessionStorage.getItem("col_search")   ?? "";
+    const category = sessionStorage.getItem("col_category") ?? "All";
+    const sort     = (sessionStorage.getItem("col_sort") as SortKey) ?? "Newest";
+    const savedLimit = parseInt(sessionStorage.getItem("col_limit") ?? String(LOAD_MORE_SIZE));
+
+    if (search) setSearchQuery(search);
+    if (category !== "All") setSelectedCategory(category);
+    if (sort !== "Newest") setSortBy(sort);
+    if (savedLimit > LOAD_MORE_SIZE) setLimit(savedLimit);
+    
+    setScrollReady(true);
+  }, []);
 
   // ── Fetch products on mount ───────────────────────────────────────────────
   useEffect(() => {

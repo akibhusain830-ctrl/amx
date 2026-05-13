@@ -24,20 +24,26 @@ export default function CollectionGrid({ products }: { products: Product[] }) {
   const SK_SORT   = `cat_sort_${category}`;
   const SK_LIMIT  = `cat_limit_${category}`;
 
-  // ── Initialise state synchronously from sessionStorage ────────────────────
-  // useState initialiser runs once on first render — no async update needed.
-  const [sort,  setSort]  = useState<SortKey>(() =>
-    typeof window !== "undefined" ? (sessionStorage.getItem(SK_SORT) as SortKey ?? "default") : "default"
-  );
-  const [limit, setLimit] = useState(() =>
-    typeof window !== "undefined" ? parseInt(sessionStorage.getItem(SK_LIMIT) ?? String(LOAD_MORE_SIZE)) : LOAD_MORE_SIZE
-  );
+  // ── Initialise state with server-consistent defaults ──────────────────────
+  const [sort,  setSort]  = useState<SortKey>("default");
+  const [limit, setLimit] = useState(LOAD_MORE_SIZE);
 
   const [sortOpen,      setSortOpen]      = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [scrollReady,   setScrollReady]   = useState(true);
+  const [scrollReady,   setScrollReady]   = useState(false); // Start false to prevent scroll jump
 
   const sentinelRef        = useRef<HTMLDivElement>(null);
+
+  // ── Initial Restoration on Mount ──────────────────────────────────────────
+  useEffect(() => {
+    const savedSort  = sessionStorage.getItem(SK_SORT) as SortKey;
+    const savedLimit = parseInt(sessionStorage.getItem(SK_LIMIT) ?? String(LOAD_MORE_SIZE));
+
+    if (savedSort && savedSort !== "default") setSort(savedSort);
+    if (savedLimit > LOAD_MORE_SIZE) setLimit(savedLimit);
+    
+    setScrollReady(true);
+  }, [SK_SORT, SK_LIMIT]);
 
   // ── Persist sort + limit ──────────────────────────────────────────────────
   useEffect(() => { sessionStorage.setItem(SK_SORT, sort); }, [sort, SK_SORT]);
