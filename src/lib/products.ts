@@ -23,6 +23,7 @@ export interface Product {
     medium: { dimensions: string; price: number; original_price?: number };
     large: { dimensions: string; price: number; original_price?: number };
   };
+  created_at?: string;
 }
 
 export interface CategoryThumbnail {

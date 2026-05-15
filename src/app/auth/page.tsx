@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, ArrowLeft, Mail, Lock, User, Loader2, ChevronRight, X, Check } from "lucide-react";
+import { Zap, ArrowLeft, Mail, Lock, User, Loader2, X, Check } from "lucide-react";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 

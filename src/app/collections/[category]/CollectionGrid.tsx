@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import ProductCard from "@/components/ProductCard";
 import { Product } from "@/lib/products";
-import { useRouter, usePathname, useSearchParams, useParams } from "next/navigation";
+import { usePathname, useSearchParams, useParams } from "next/navigation";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
 
 const LOAD_MORE_SIZE = 16;
@@ -21,7 +21,6 @@ const SORT_OPTIONS: { key: SortKey; label: string; desc: string }[] = [
 export default function CollectionGrid({ products }: { products: Product[] }) {
   const params   = useParams();
   const searchParams = useSearchParams();
-  const router = useRouter();
   const pathname = usePathname();
   const category = (params?.category as string) || "default";
 

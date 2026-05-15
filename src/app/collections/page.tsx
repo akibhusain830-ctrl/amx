@@ -1,14 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo, useLayoutEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Search, SlidersHorizontal, ChevronDown } from "lucide-react";
 import Header from "@/components/Header";
 import ProductCard from "@/components/ProductCard";
-import { Product } from "@/lib/products";
 import { useProductStore } from "@/store/productStore";
 
-import { mapDbCategoryToLabel } from "@/lib/categories";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSearchParams, usePathname } from "next/navigation";
 
 const LOAD_MORE_SIZE = 16;
 
@@ -25,7 +23,6 @@ const SORT_OPTIONS: { key: SortKey; label: string; desc: string }[] = [
 export default function CollectionsPage() {
   const { products, isLoading, fetchProducts } = useProductStore();
   const searchParams = useSearchParams();
-  const router = useRouter();
   const pathname = usePathname();
 
   // ── Initialise state from URL or sessionStorage ──────────────────────
@@ -38,7 +35,7 @@ export default function CollectionsPage() {
   });
 
   const [sortOpen,         setSortOpen]         = useState(false);
-  const [isLoadingMore,    setIsLoadingMore]    = useState(false);
+  const [isLoadingMore]                         = useState(false);
   const [scrollReady,      setScrollReady]      = useState(false);
 
   const sentinelRef        = useRef<HTMLDivElement>(null);

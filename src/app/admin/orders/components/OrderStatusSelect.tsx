@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { Loader2, ChevronDown, Check, X, AlertTriangle } from "lucide-react";
+import { Loader2, ChevronDown, Check, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const STATUSES = ["Order Placed", "Handcrafting", "Quality Check", "Shipped", "Delivered", "Cancelled"];

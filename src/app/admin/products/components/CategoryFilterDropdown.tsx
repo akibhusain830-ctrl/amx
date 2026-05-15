@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, SlidersHorizontal } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 export default function CategoryFilterDropdown({
   categories,

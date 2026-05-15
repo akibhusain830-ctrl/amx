@@ -5,7 +5,6 @@ import ProductCard from "@/components/ProductCard";
 import { getProducts, getTrendingProducts, getCategoryThumbnails } from "@/lib/products";
 import { Star, ShieldCheck, Truck, Zap } from "lucide-react";
 import Link from "next/link";
-import CategoryCarousel from "@/components/CategoryCarousel";
 import CategoryCard from "@/components/CategoryCard";
 
 export const revalidate = 60; // Revalidate every minute

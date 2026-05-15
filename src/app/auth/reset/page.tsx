@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Zap, Lock, Loader2, CheckCircle2, ArrowRight } from "lucide-react";
+import { Lock, Loader2, CheckCircle2, ArrowRight } from "lucide-react";
 import Header from "@/components/Header";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
