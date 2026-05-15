@@ -15,13 +15,13 @@ interface MobileMenuProps {
 }
 
 const navLinks = [
-  { href: "/customizer", label: "✦ Customise" },
   { href: "/collections", label: "Shop All" },
   { href: "/collections/cafe", label: "Cafe" },
   { href: "/collections/aesthetic", label: "Aesthetic" },
   { href: "/collections/love", label: "Love" },
   { href: "/collections/wings", label: "Wings" },
   { href: "/collections/gaming", label: "Gaming" },
+  { href: "/collections/pop-culture", label: "Pop Culture" },
   { href: "/collections/cars", label: "Cars" },
   { href: "/collections/under-4000", label: "Under 4000" },
 ];
@@ -151,11 +151,12 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, user, isAdmin,
 
             <div className="p-6 border-t border-white/10 shrink-0">
               <Link
-                href="/collections"
+                href="/customizer"
                 onClick={onClose}
-                className="block w-full bg-primary text-black py-4 rounded-full font-black text-xs tracking-[0.2em] uppercase text-center hover:scale-[1.02] transition-transform active:scale-95 neon-bloom-lime"
+                className="flex items-center justify-center gap-2 w-full bg-primary text-black py-4 rounded-full font-black text-xs tracking-[0.2em] uppercase text-center hover:scale-[1.02] transition-transform active:scale-95 neon-bloom-lime"
               >
-                Shop Now
+                <Zap className="w-4 h-4 fill-current" />
+                Customise
               </Link>
             </div>
           </motion.div>

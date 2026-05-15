@@ -39,7 +39,7 @@ export default async function AdminProductsPage({
   const { data: products, error } = await query;
 
   // Standard categories for filter
-  const categories = ["Cafe", "Aesthetic", "Love", "Wings", "Gaming", "Cars"];
+  const categories = ["Cafe", "Aesthetic", "Love", "Wings", "Gaming", "Pop Culture", "Cars"];
 
   if (error) console.error("Error fetching products:", error);
 

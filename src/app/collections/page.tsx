@@ -7,6 +7,9 @@ import ProductCard from "@/components/ProductCard";
 import { Product } from "@/lib/products";
 import { useProductStore } from "@/store/productStore";
 
+import { mapDbCategoryToLabel } from "@/lib/categories";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+
 const LOAD_MORE_SIZE = 16;
 
 type SortKey = "Newest" | "Price: Low to High" | "Price: High to Low" | "Alphabetical";
@@ -21,31 +24,40 @@ const SORT_OPTIONS: { key: SortKey; label: string; desc: string }[] = [
 
 export default function CollectionsPage() {
   const { products, isLoading, fetchProducts } = useProductStore();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
-  // ── Initialise state with server-consistent defaults ──────────────────────
-  const [searchQuery,      setSearchQuery]      = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [sortBy,           setSortBy]           = useState<SortKey>("Newest");
-  const [limit,            setLimit]            = useState(LOAD_MORE_SIZE);
+  // ── Initialise state from URL or sessionStorage ──────────────────────
+  const [searchQuery,      setSearchQuery]      = useState(searchParams.get("q") || "");
+  const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "All");
+  const [sortBy,           setSortBy]           = useState<SortKey>((searchParams.get("sort") as SortKey) || "Newest");
+  const [limit,            setLimit]            = useState(() => {
+    if (typeof window === "undefined") return LOAD_MORE_SIZE;
+    return parseInt(sessionStorage.getItem("col_limit") ?? String(LOAD_MORE_SIZE));
+  });
 
   const [sortOpen,         setSortOpen]         = useState(false);
   const [isLoadingMore,    setIsLoadingMore]    = useState(false);
-  const [scrollReady,      setScrollReady]      = useState(false); // Start false to prevent scroll jump
+  const [scrollReady,      setScrollReady]      = useState(false);
 
   const sentinelRef        = useRef<HTMLDivElement>(null);
 
+  // ── Update URL when filters change ────────────────────────────────────────
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (searchQuery) params.set("q", searchQuery); else params.delete("q");
+    if (selectedCategory !== "All") params.set("category", selectedCategory); else params.delete("category");
+    if (sortBy !== "Newest") params.set("sort", sortBy); else params.delete("sort");
+    
+    const query = params.toString();
+    const url = query ? `${pathname}?${query}` : pathname;
+    window.history.replaceState(null, "", url);
+  }, [searchQuery, selectedCategory, sortBy, pathname, searchParams]);
+
   // ── Initial Restoration on Mount ──────────────────────────────────────────
   useEffect(() => {
-    const search   = sessionStorage.getItem("col_search")   ?? "";
-    const category = sessionStorage.getItem("col_category") ?? "All";
-    const sort     = (sessionStorage.getItem("col_sort") as SortKey) ?? "Newest";
-    const savedLimit = parseInt(sessionStorage.getItem("col_limit") ?? String(LOAD_MORE_SIZE));
-
-    if (search) setSearchQuery(search);
-    if (category !== "All") setSelectedCategory(category);
-    if (sort !== "Newest") setSortBy(sort);
-    if (savedLimit > LOAD_MORE_SIZE) setLimit(savedLimit);
-    
+    // Only used to mark the grid as ready for intersection observer
     setScrollReady(true);
   }, []);
 
@@ -53,13 +65,6 @@ export default function CollectionsPage() {
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
-
-  // ── Persist state to sessionStorage ──────────────────────────────────────
-  useEffect(() => { sessionStorage.setItem("col_search",   searchQuery);   }, [searchQuery]);
-  useEffect(() => { sessionStorage.setItem("col_category", selectedCategory); }, [selectedCategory]);
-  useEffect(() => { sessionStorage.setItem("col_sort",     sortBy);        }, [sortBy]);
-
-
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
@@ -69,44 +74,28 @@ export default function CollectionsPage() {
         p.category.toLowerCase().includes(searchQuery.toLowerCase())
       );
     if (selectedCategory !== "All")
-      result = result.filter(p => p.category.toUpperCase() === selectedCategory.toUpperCase());
+      result = result.filter(p => p.category.toLowerCase() === selectedCategory.toLowerCase());
+    
     if (sortBy === "Price: Low to High")      result.sort((a, b) => a.price - b.price);
     else if (sortBy === "Price: High to Low") result.sort((a, b) => b.price - a.price);
     else if (sortBy === "Alphabetical")       result.sort((a, b) => a.title.localeCompare(b.title));
+    else result.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+    
     return result;
   }, [searchQuery, selectedCategory, sortBy, products]);
 
-  // ── Compute visible slice ─────────────────────────────────────────────────
-  // `limit` was initialised from sessionStorage synchronously, so on the very
-  // first render after back-navigation this already has the correct value.
   const visible = filteredProducts.slice(0, limit);
   const hasMore = visible.length < filteredProducts.length;
 
-  // ── Persist limit (exact visible count) ──────────────────────────────────
   useEffect(() => {
     sessionStorage.setItem("col_limit", String(visible.length));
   }, [visible.length]);
 
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(products.map(p => p.category)));
+    return ["All", ...cats.sort()];
+  }, [products]);
 
-
-  // ── Infinite scroll — only after restoration ──────────────────────────────
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel || !hasMore || !scrollReady) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !isLoadingMore) {
-          setIsLoadingMore(true);
-          setTimeout(() => { setLimit(l => l + LOAD_MORE_SIZE); setIsLoadingMore(false); }, 300);
-        }
-      },
-      { rootMargin: "400px" }
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [hasMore, isLoadingMore, scrollReady]);
-
-  const categories  = ["All", ...Array.from(new Set(products.map(p => p.category.toUpperCase())))];
   const currentSort = SORT_OPTIONS.find(o => o.key === sortBy)!;
 
   return (
@@ -207,8 +196,16 @@ export default function CollectionsPage() {
 
         {/* Products Grid */}
         {isLoading && products.length === 0 ? (
-          <div className="h-64 flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-6 sm:gap-x-6 sm:gap-y-12 animate-pulse">
+            {Array.from({ length: limit }).map((_, i) => (
+              <div key={i} className="flex flex-col gap-4">
+                <div className="aspect-square bg-surface rounded-2xl border border-white/5" />
+                <div className="space-y-2">
+                  <div className="h-4 bg-surface rounded w-3/4" />
+                  <div className="h-3 bg-surface rounded w-1/2" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : filteredProducts.length > 0 ? (
           <>

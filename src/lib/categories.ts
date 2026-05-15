@@ -11,6 +11,7 @@ export const CATEGORY_CONFIG: CategoryConfig[] = [
   { label: "Cars", slug: "cars", dbValue: "Cars" },
   { label: "Aesthetic", slug: "aesthetic", dbValue: "Aesthetic" },
   { label: "Love", slug: "love", dbValue: "Love" },
+  { label: "Pop Culture", slug: "pop-culture", dbValue: "Pop Culture" },
   { label: "Under 4000", slug: "under-4000", dbValue: "Under 4000" },
 ];
 

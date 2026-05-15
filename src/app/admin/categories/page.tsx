@@ -19,6 +19,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   wings:       "#00F0FF",
   gaming:      "#4D7CFF",
   cars:        "#FF4500",
+  "pop-culture": "#FFE600",
   "under-4000":"#36F4A4",
 };
 
@@ -110,7 +111,7 @@ export default function CategoryThumbnailsPage() {
           return (
             <div key={cat.slug} className="bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden">
               {/* Thumbnail Preview */}
-              <div className="relative aspect-[4/5] bg-surface">
+              <div className="relative aspect-square bg-surface">
                 {cat.image_url ? (
                   <Image src={cat.image_url} alt={cat.label} fill className="object-cover" sizes="300px" />
                 ) : (

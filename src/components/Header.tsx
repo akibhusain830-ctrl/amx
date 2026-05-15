@@ -90,13 +90,13 @@ const Header = () => {
 
   const displayName = user?.user_metadata?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "Account";
   const navLinks = [
-    { href: "/customizer",            label: "✦ Customise", match: "/customizer",            color: "#C6FF00", bg: "rgba(198,255,0,0.12)" },
     { href: "/collections",           label: "Shop All",    match: "/collections",            color: "#C6FF00", bg: "rgba(198,255,0,0.12)" },
     { href: "/collections/cafe",      label: "Cafe",        match: "/collections/cafe",       color: "#FF9500", bg: "rgba(255,149,0,0.12)" },
     { href: "/collections/aesthetic", label: "Aesthetic",   match: "/collections/aesthetic",  color: "#BF5FFF", bg: "rgba(191,95,255,0.12)" },
     { href: "/collections/love",      label: "Love",        match: "/collections/love",       color: "#FF007A", bg: "rgba(255,0,122,0.12)" },
     { href: "/collections/wings",     label: "Wings",       match: "/collections/wings",      color: "#00F0FF", bg: "rgba(0,240,255,0.12)" },
     { href: "/collections/gaming",    label: "Gaming",      match: "/collections/gaming",     color: "#4D7CFF", bg: "rgba(77,124,255,0.12)" },
+    { href: "/collections/pop-culture", label: "Pop Culture", match: "/collections/pop-culture", color: "#FFE600", bg: "rgba(255,230,0,0.2)" },
     { href: "/collections/cars",      label: "Cars",        match: "/collections/cars",       color: "#FF4500", bg: "rgba(255,69,0,0.12)" },
     { href: "/collections/under-4000",label: "Under 4000",  match: "/collections/under-4000", color: "#36F4A4", bg: "rgba(54,244,164,0.12)" },
   ];
@@ -261,10 +261,11 @@ const Header = () => {
             </Link>
 
             <Link
-              href="/collections"
-              className="hidden xl:block bg-primary text-black px-6 py-2.5 rounded-full font-bold text-xs tracking-widest uppercase hover:scale-105 transition-transform active:scale-95 neon-bloom-lime"
+              href="/customizer"
+              className="hidden xl:flex items-center gap-2 bg-primary text-black px-6 py-2.5 rounded-full font-black text-xs tracking-widest uppercase hover:scale-105 transition-transform active:scale-95 neon-bloom-lime"
             >
-              Shop Now
+              <Zap className="w-4 h-4 fill-current" />
+              Customise
             </Link>
           </div>
         </div>

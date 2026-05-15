@@ -274,7 +274,7 @@ export default function ProductForm({ product }: ProductFormProps) {
                 style={{ background: "rgba(10,10,10,0.97)", backdropFilter: "blur(24px)" }}
               >
                 <div className="max-h-60 overflow-y-auto thin-scrollbar p-2">
-                  {["Cafe", "Aesthetic", "Love", "Wings", "Gaming", "Cars"].map((cat) => {
+                  {["Cafe", "Aesthetic", "Love", "Wings", "Gaming", "Pop Culture", "Cars"].map((cat) => {
                     const isActive = category === cat;
                     return (
                       <button

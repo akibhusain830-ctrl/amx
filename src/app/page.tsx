@@ -5,6 +5,7 @@ import ProductCard from "@/components/ProductCard";
 import { getProducts, getTrendingProducts, getCategoryThumbnails } from "@/lib/products";
 import { Star, ShieldCheck, Truck, Zap } from "lucide-react";
 import Link from "next/link";
+import CategoryCarousel from "@/components/CategoryCarousel";
 import CategoryCard from "@/components/CategoryCard";
 
 export const revalidate = 60; // Revalidate every minute
@@ -20,6 +21,18 @@ export default async function Home() {
     categoryMap[p.category] = (categoryMap[p.category] || 0) + 1;
   });
 
+  const categories = [
+    { title: "Shop All",   image: categoryThumbs["shop-all"]   ?? products[0]?.image_url,                               href: "/collections" },
+    { title: "Cafe",        image: categoryThumbs["cafe"]        ?? products.find(p => p.category === "Cafe")?.image_url,      href: "/collections/cafe" },
+    { title: "Aesthetic",   image: categoryThumbs["aesthetic"]   ?? products.find(p => p.category === "Aesthetic")?.image_url, href: "/collections/aesthetic" },
+    { title: "Love",        image: categoryThumbs["love"]        ?? products.find(p => p.category === "Love")?.image_url,      href: "/collections/love" },
+    { title: "Wings",       image: categoryThumbs["wings"]       ?? products.find(p => p.category === "Wings")?.image_url,     href: "/collections/wings" },
+    { title: "Gaming",      image: categoryThumbs["gaming"]      ?? products.find(p => p.category === "Gaming")?.image_url,    href: "/collections/gaming" },
+    { title: "Pop Culture", image: categoryThumbs["pop-culture"] ?? products.find(p => p.category === "Pop Culture")?.image_url, href: "/collections/pop-culture" },
+    { title: "Cars",        image: categoryThumbs["cars"]        ?? products.find(p => p.category === "Cars")?.image_url,      href: "/collections/cars" },
+    { title: "Under 4000",  image: categoryThumbs["under-4000"]  ?? products.find(p => p.price < 4000)?.image_url,            href: "/collections/under-4000" },
+    { title: "Bestsellers",  image: categoryThumbs["bestsellers"] ?? trending[0]?.image_url,                               href: "/collections" },
+  ];
 
   return (
     <main className="min-h-screen bg-black selection:bg-primary/30 selection:text-primary">
@@ -30,7 +43,7 @@ export default async function Home() {
 
       {/* USP Strip */}
       <section className="py-4 md:py-6 border-b border-white/5">
-        <div className="container mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6">
           {/* Mobile: compact single row scroll */}
           <div className="flex overflow-x-auto gap-3 scrollbar-hide md:hidden -mx-6 px-6 pb-2">
             {[
@@ -66,25 +79,23 @@ export default async function Home() {
       </section>
 
       {/* Category Pulse — dynamic counts */}
-      <section className="py-10 border-b border-white/5" aria-labelledby="category-heading">
-        <div className="container mx-auto px-6">
+      <section className="py-6 border-b border-white/5" aria-labelledby="category-heading">
+        <div className="max-w-6xl mx-auto px-6">
           <div className="mb-6">
             <span className="text-primary font-mono text-xs uppercase tracking-[0.3em] mb-3 block">Explore</span>
             <h2 id="category-heading" className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
               Categories
             </h2>
           </div>
-          <div className="flex overflow-x-auto gap-4 md:gap-6 pb-6 snap-x snap-mandatory scrollbar-hide">
-            {[
-              { title: "Shop All",   image: categoryThumbs["shop-all"]   ?? products[0]?.image_url,                               href: "/collections" },
-              { title: "Cafe",        image: categoryThumbs["cafe"]        ?? products.find(p => p.category === "Cafe")?.image_url,      href: "/collections/cafe" },
-              { title: "Aesthetic",   image: categoryThumbs["aesthetic"]   ?? products.find(p => p.category === "Aesthetic")?.image_url, href: "/collections/aesthetic" },
-              { title: "Love",        image: categoryThumbs["love"]        ?? products.find(p => p.category === "Love")?.image_url,      href: "/collections/love" },
-              { title: "Wings",       image: categoryThumbs["wings"]       ?? products.find(p => p.category === "Wings")?.image_url,     href: "/collections/wings" },
-              { title: "Gaming",      image: categoryThumbs["gaming"]      ?? products.find(p => p.category === "Gaming")?.image_url,    href: "/collections/gaming" },
-              { title: "Cars",        image: categoryThumbs["cars"]        ?? products.find(p => p.category === "Cars")?.image_url,      href: "/collections/cars" },
-              { title: "Under 4000",  image: categoryThumbs["under-4000"]  ?? products.find(p => p.price < 4000)?.image_url,            href: "/collections/under-4000" },
-            ].map((cat, i) => (
+          {/* Mobile: Carousel | Desktop: 5x2 Grid */}
+          <div className="md:hidden grid grid-cols-2 gap-4 pb-8">
+            {categories.map((cat, i) => (
+              <CategoryCard key={i} cat={cat} useTransition={true} />
+            ))}
+          </div>
+
+          <div className="hidden md:grid grid-cols-5 gap-6">
+            {categories.map((cat, i) => (
               <CategoryCard key={i} cat={cat} useTransition={true} />
             ))}
           </div>

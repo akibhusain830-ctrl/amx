@@ -41,16 +41,16 @@ const Hero = React.memo(() => {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full px-4 sm:px-0 max-w-sm sm:max-w-none mx-auto mt-2">
             <Link 
-              href="/collections"
+              href="/customizer"
               className="w-full sm:w-auto text-center bg-primary text-black px-6 py-3.5 sm:px-8 md:px-10 md:py-4 rounded-full font-black text-xs md:text-sm uppercase tracking-widest sm:tracking-[0.2em] hover:scale-105 transition-transform shadow-[0_0_20px_rgba(198,255,0,0.4)] whitespace-nowrap neon-bloom-lime"
             >
-              Shop Now
+              Customise
             </Link>
             <Link 
-              href="/customizer"
+              href="/collections"
               className="w-full sm:w-auto text-center bg-transparent border-2 border-primary/40 text-primary px-6 py-3 sm:px-8 md:px-10 md:py-3.5 rounded-full font-black text-xs md:text-sm uppercase tracking-widest sm:tracking-[0.2em] hover:bg-primary/10 transition-colors shadow-[0_0_15px_rgba(198,255,0,0.15)] whitespace-nowrap"
             >
-              Customise
+              Shop All
             </Link>
           </div>
         </motion.div>

@@ -115,7 +115,7 @@ export default function CustomizerClient() {
             {/* Preview canvas */}
             <div
               className="relative rounded-2xl border border-white/10 overflow-hidden flex items-center justify-center"
-              style={{ background: previewBg.bg, minHeight: 320 }}
+              style={{ background: previewBg.bg, minHeight: typeof window !== 'undefined' && window.innerWidth < 768 ? 220 : 320 }}
             >
               {/* Scanline overlay for atmosphere */}
               <div
@@ -124,7 +124,7 @@ export default function CustomizerClient() {
                   backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,1) 2px, rgba(255,255,255,1) 3px)",
                 }}
               />
-              <div className="relative z-10 flex items-center justify-center py-8 md:py-14 px-6 md:px-8">
+              <div className="relative z-10 flex items-center justify-center py-5 md:py-14 px-6 md:px-8">
                 {text.trim() ? (
                   <p
                     className="text-center break-words leading-none select-none transition-all duration-300"

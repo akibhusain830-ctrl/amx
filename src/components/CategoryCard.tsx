@@ -29,8 +29,8 @@ export default function CategoryCard({ cat, useTransition = false }: CategoryCar
   };
 
   return (
-    <div className="group flex flex-col gap-3 w-[160px] md:w-[220px] lg:w-[260px] shrink-0 snap-start">
-      <Link href={cat.href} onClick={handleNavigate} className="relative aspect-[4/5] rounded-2xl overflow-hidden bg-surface border border-white/5 transition-transform duration-500 group-hover:border-primary/30 flex items-center justify-center">
+    <div className="group flex flex-col gap-3 w-full shrink-0 snap-start">
+      <Link href={cat.href} onClick={handleNavigate} className="relative aspect-square rounded-2xl overflow-hidden bg-surface border border-white/5 transition-transform duration-500 group-hover:border-primary/30 flex items-center justify-center">
         {cat.image ? (
           <Image src={cat.image} alt={cat.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" sizes="(max-width: 768px) 50vw, 20vw" />
         ) : (

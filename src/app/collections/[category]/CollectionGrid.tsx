@@ -3,50 +3,57 @@
 import { useState, useMemo, useEffect, useRef } from "react";
 import ProductCard from "@/components/ProductCard";
 import { Product } from "@/lib/products";
+import { useRouter, usePathname, useSearchParams, useParams } from "next/navigation";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
-import { useParams } from "next/navigation";
 
 const LOAD_MORE_SIZE = 16;
 
-type SortKey = "default" | "price-asc" | "price-desc" | "newest";
+type SortKey = "default" | "price-asc" | "price-desc" | "newest" | "alphabetical";
 
 const SORT_OPTIONS: { key: SortKey; label: string; desc: string }[] = [
-  { key: "default",    label: "Featured",          desc: "Our top picks" },
-  { key: "newest",     label: "Newest First",       desc: "Latest arrivals" },
-  { key: "price-asc",  label: "Price: Low → High",  desc: "Budget friendly first" },
-  { key: "price-desc", label: "Price: High → Low",  desc: "Premium first" },
+  { key: "default",      label: "Featured",          desc: "Our top picks" },
+  { key: "newest",       label: "Newest First",       desc: "Latest arrivals" },
+  { key: "price-asc",    label: "Price: Low → High",  desc: "Budget friendly first" },
+  { key: "price-desc",   label: "Price: High → Low",  desc: "Premium first" },
+  { key: "alphabetical", label: "Alphabetical",      desc: "A to Z" },
 ];
 
 export default function CollectionGrid({ products }: { products: Product[] }) {
   const params   = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const category = (params?.category as string) || "default";
 
-  const SK_SORT   = `cat_sort_${category}`;
   const SK_LIMIT  = `cat_limit_${category}`;
 
-  // ── Initialise state with server-consistent defaults ──────────────────────
-  const [sort,  setSort]  = useState<SortKey>("default");
-  const [limit, setLimit] = useState(LOAD_MORE_SIZE);
+  // ── Initialise state from URL or sessionStorage ──────────────────────
+  const [sort,  setSort]  = useState<SortKey>((searchParams.get("sort") as SortKey) || "default");
+  const [limit, setLimit] = useState(() => {
+    if (typeof window === "undefined") return LOAD_MORE_SIZE;
+    return parseInt(sessionStorage.getItem(SK_LIMIT) ?? String(LOAD_MORE_SIZE));
+  });
 
   const [sortOpen,      setSortOpen]      = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [scrollReady,   setScrollReady]   = useState(false); // Start false to prevent scroll jump
+  const [scrollReady,   setScrollReady]   = useState(false);
 
   const sentinelRef        = useRef<HTMLDivElement>(null);
 
+  // ── Update URL when sort changes ──────────────────────────────────────────
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    if (sort !== "default") params.set("sort", sort); else params.delete("sort");
+    
+    const query = params.toString();
+    const url = query ? `${pathname}?${query}` : pathname;
+    window.history.replaceState(null, "", url);
+  }, [sort, pathname, searchParams]);
+
   // ── Initial Restoration on Mount ──────────────────────────────────────────
   useEffect(() => {
-    const savedSort  = sessionStorage.getItem(SK_SORT) as SortKey;
-    const savedLimit = parseInt(sessionStorage.getItem(SK_LIMIT) ?? String(LOAD_MORE_SIZE));
-
-    if (savedSort && savedSort !== "default") setSort(savedSort);
-    if (savedLimit > LOAD_MORE_SIZE) setLimit(savedLimit);
-    
     setScrollReady(true);
-  }, [SK_SORT, SK_LIMIT]);
-
-  // ── Persist sort + limit ──────────────────────────────────────────────────
-  useEffect(() => { sessionStorage.setItem(SK_SORT, sort); }, [sort, SK_SORT]);
+  }, []);
 
 
 
@@ -54,7 +61,9 @@ export default function CollectionGrid({ products }: { products: Product[] }) {
   const sorted = useMemo(() => {
     const arr = [...products];
     if (sort === "price-asc")  arr.sort((a, b) => a.price - b.price);
-    if (sort === "price-desc") arr.sort((a, b) => b.price - a.price);
+    else if (sort === "price-desc") arr.sort((a, b) => b.price - a.price);
+    else if (sort === "alphabetical") arr.sort((a, b) => a.title.localeCompare(b.title));
+    else arr.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
     return arr;
   }, [products, sort]);
 
