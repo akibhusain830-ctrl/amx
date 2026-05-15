@@ -169,7 +169,7 @@ export default function CartDrawer() {
                 customerEmail: form.email,
                 customerPhone: form.phone,
                 shippingAddress: `${form.address}, ${form.city}, ${form.state} - ${form.pincode}`,
-                totalAmount: subtotal,
+                totalAmount: finalAmount,
                 discountAmount: appliedCoupon ? appliedCoupon.discount : 0,
                 couponCode: appliedCoupon ? appliedCoupon.code : null,
                 items: items.map(i => ({

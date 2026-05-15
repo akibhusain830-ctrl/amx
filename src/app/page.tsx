@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import Hero from "@/components/Hero";
 import ProductCard from "@/components/ProductCard";
-import { getProducts, getTrendingProducts, getCategoryThumbnails } from "@/lib/products";
+import { getTrendingProducts, getCategoryThumbnails } from "@/lib/products";
 import { Star, ShieldCheck, Truck, Zap } from "lucide-react";
 import Link from "next/link";
 import CategoryCard from "@/components/CategoryCard";
@@ -10,27 +10,20 @@ import CategoryCard from "@/components/CategoryCard";
 export const revalidate = 60; // Revalidate every minute
 
 export default async function Home() {
-  const products = await getProducts(50);
   const trending = await getTrendingProducts();
   const categoryThumbs = await getCategoryThumbnails();
 
-  // Dynamic category counts
-  const categoryMap: Record<string, number> = {};
-  products.forEach((p) => {
-    categoryMap[p.category] = (categoryMap[p.category] || 0) + 1;
-  });
-
   const categories = [
-    { title: "Shop All",   image: categoryThumbs["shop-all"]   ?? products[0]?.image_url,                               href: "/collections" },
-    { title: "Cafe",        image: categoryThumbs["cafe"]        ?? products.find(p => p.category === "Cafe")?.image_url,      href: "/collections/cafe" },
-    { title: "Aesthetic",   image: categoryThumbs["aesthetic"]   ?? products.find(p => p.category === "Aesthetic")?.image_url, href: "/collections/aesthetic" },
-    { title: "Love",        image: categoryThumbs["love"]        ?? products.find(p => p.category === "Love")?.image_url,      href: "/collections/love" },
-    { title: "Wings",       image: categoryThumbs["wings"]       ?? products.find(p => p.category === "Wings")?.image_url,     href: "/collections/wings" },
-    { title: "Gaming",      image: categoryThumbs["gaming"]      ?? products.find(p => p.category === "Gaming")?.image_url,    href: "/collections/gaming" },
-    { title: "Pop Culture", image: categoryThumbs["pop-culture"] ?? products.find(p => p.category === "Pop Culture")?.image_url, href: "/collections/pop-culture" },
-    { title: "Cars",        image: categoryThumbs["cars"]        ?? products.find(p => p.category === "Cars")?.image_url,      href: "/collections/cars" },
-    { title: "Under 4000",  image: categoryThumbs["under-4000"]  ?? products.find(p => p.price < 4000)?.image_url,            href: "/collections/under-4000" },
-    { title: "Bestsellers",  image: categoryThumbs["bestsellers"] ?? trending[0]?.image_url,                               href: "/collections" },
+    { title: "Shop All",   image: categoryThumbs["shop-all"],   href: "/collections" },
+    { title: "Cafe",        image: categoryThumbs["cafe"],        href: "/collections/cafe" },
+    { title: "Aesthetic",   image: categoryThumbs["aesthetic"],   href: "/collections/aesthetic" },
+    { title: "Love",        image: categoryThumbs["love"],        href: "/collections/love" },
+    { title: "Wings",       image: categoryThumbs["wings"],       href: "/collections/wings" },
+    { title: "Gaming",      image: categoryThumbs["gaming"],      href: "/collections/gaming" },
+    { title: "Pop Culture", image: categoryThumbs["pop-culture"], href: "/collections/pop-culture" },
+    { title: "Cars",        image: categoryThumbs["cars"],        href: "/collections/cars" },
+    { title: "Under 4000",  image: categoryThumbs["under-4000"],  href: "/collections/under-4000" },
+    { title: "Bestsellers", image: categoryThumbs["bestsellers"] ?? trending[0]?.image_url, href: "/collections" },
   ];
 
   return (

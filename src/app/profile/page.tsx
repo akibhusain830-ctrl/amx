@@ -196,8 +196,8 @@ export default function ProfilePage() {
                       : "text-text-muted hover:bg-white/5"
                   }`}
                 >
-                  <Package className="w-4 h-4" />
-                  <span className="text-xs uppercase tracking-widest">Profile</span>
+                  <ShoppingBag className="w-4 h-4" />
+                  <span className="text-xs uppercase tracking-widest">My Orders</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("details")}

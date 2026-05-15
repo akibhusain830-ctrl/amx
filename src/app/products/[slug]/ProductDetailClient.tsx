@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Star,
@@ -18,12 +19,12 @@ import {
   Info,
   Mail,
   Loader2,
+  AlertCircle,
 } from 'lucide-react';
 import { Product } from '@/lib/products';
 import { useCartStore } from '@/store/cartStore';
 import { formatPrice } from '@/lib/utils';
 import Header from '@/components/Header';
-import { useRouter } from 'next/navigation';
 
 interface ProductDetailClientProps {
   product: Product;
@@ -33,22 +34,22 @@ interface ProductDetailClientProps {
 // Notify-me form for sold-out products
 function SoldOutNotify({ productTitle, productId }: { productTitle: string; productId: string }) {
   const [email, setEmail] = React.useState('');
-  const [status, setStatus] = React.useState<'idle' | 'loading' | 'done'>('idle');
+  const [status, setStatus] = React.useState<'idle' | 'loading' | 'done' | 'error'>('idle');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
     setStatus('loading');
     try {
-      await fetch('/api/notify-restock', {
+      const res = await fetch('/api/notify-restock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, productId, productTitle }),
       });
-    } catch {
-      /* silent */
-    } finally {
+      if (!res.ok) throw new Error('Failed');
       setStatus('done');
+    } catch {
+      setStatus('error');
     }
   };
 
@@ -57,6 +58,15 @@ function SoldOutNotify({ productTitle, productId }: { productTitle: string; prod
       <div className="w-full py-4 rounded-2xl bg-accent-mint/10 border border-accent-mint/20 flex items-center justify-center gap-2 text-accent-mint">
         <Check className="w-5 h-5" />
         <span className="text-sm font-black uppercase tracking-widest">You&apos;ll be notified when it&apos;s back!</span>
+      </div>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <div className="w-full py-4 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center gap-2 text-red-400">
+        <AlertCircle className="w-5 h-5" />
+        <span className="text-sm font-black uppercase tracking-widest">Failed to register — try again.</span>
       </div>
     );
   }
@@ -95,7 +105,6 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product, rela
   const addItem = useCartStore((state) => state.addItem);
   const openCart = useCartStore((state) => state.openCart);
   const [added, setAdded] = useState(false);
-  const router = useRouter();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const images = product.images && product.images.length > 0 ? product.images : (product.image_url ? [product.image_url] : []);
@@ -130,7 +139,7 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product, rela
   return (
     <main className="min-h-screen bg-black selection:bg-primary/30 selection:text-primary">
       <Header />
-      <div className="pt-24 pb-16 container mx-auto px-4 lg:px-6">
+      <div className="pt-24 pb-28 lg:pb-16 container mx-auto px-4 lg:px-6">
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="mb-8">
           <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-mono text-text-muted uppercase tracking-widest">
@@ -141,15 +150,15 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product, rela
             </li>
             <li className="text-white/20">/</li>
             <li>
-              <button onClick={() => router.back()} className="hover:text-primary transition-colors">
+              <Link href="/collections" className="hover:text-primary transition-colors">
                 Shop
-              </button>
+              </Link>
             </li>
             <li className="text-white/20">/</li>
             <li>
-              <button onClick={() => router.back()} className="hover:text-primary transition-colors">
+              <Link href={`/collections/${product.category.toLowerCase().replace(/\s+/g, '-')}`} className="hover:text-primary transition-colors">
                 {product.category}
-              </button>
+              </Link>
             </li>
             <li className="text-white/20">/</li>
             <li className="text-white">{product.title}</li>
@@ -175,7 +184,7 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product, rela
                     : 'border-white/10 hover:border-white/30'
                 }`}
               >
-                <img src={img} alt={`${product.title} view ${idx + 1}`} className="w-full h-full object-cover" />
+                <Image src={img} alt={`${product.title} view ${idx + 1}`} fill className="object-cover" sizes="64px" />
               </button>
             ))}
             {/* Placeholder thumbnails when no images */}
@@ -194,7 +203,7 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product, rela
             {/* Main Image */}
             <div className="relative aspect-square lg:max-h-[calc(100vh-180px)] rounded-2xl lg:rounded-3xl overflow-hidden border border-white/10 bg-surface flex items-center justify-center">
               {images.length > 0 && images[selectedImageIndex] ? (
-                <img src={images[selectedImageIndex]} alt={product.title} className="w-full h-full object-cover" />
+                <Image src={images[selectedImageIndex]} alt={product.title} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
               ) : (
                 <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
                   <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(198,255,0,0.08) 0%, transparent 70%)' }} />
@@ -231,7 +240,7 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product, rela
                       selectedImageIndex === idx ? 'border-primary' : 'border-white/10 hover:border-white/30'
                     }`}
                   >
-                    <img src={img} alt={`${product.title} view ${idx + 1}`} className="w-full h-full object-cover" />
+                    <Image src={img} alt={`${product.title} view ${idx + 1}`} fill className="object-cover" sizes="64px" />
                   </button>
                 ))}
               </div>
@@ -488,8 +497,8 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({ product, rela
                 >
                   <div className="relative aspect-square rounded-2xl overflow-hidden bg-surface border border-white/5 group-hover:border-primary/30 transition-all duration-300 mb-3">
                     {item.image_url ? (
-                      <img src={item.image_url} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    ) : (
+                       <Image src={item.image_url} alt={item.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="220px" />
+                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
                         <span className="text-primary font-black uppercase text-sm tracking-widest">{item.category[0]}</span>
                       </div>

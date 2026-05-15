@@ -7,7 +7,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ShoppingBag, Ticket, Check, X, Loader2, ChevronRight,
-  Truck, ShieldCheck, Zap, ArrowLeft, Tag, Lock, UserPlus
+  Truck, ShieldCheck, Zap, ArrowLeft, Tag, Lock, UserPlus, CheckCircle2
 } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { formatPrice } from "@/lib/utils";
@@ -479,18 +479,18 @@ export default function CheckoutPage() {
                     </button>
                   </motion.div>
                 ) : (
-                  <motion.div key="input" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex gap-2">
+                  <motion.div key="input" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-wrap gap-2">
                     <input
                       value={couponInput}
                       onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(null); }}
                       onKeyDown={(e) => e.key === "Enter" && applyCoupon()}
                       placeholder="ENTER CODE"
-                      className="flex-1 bg-black border border-white/10 focus:border-primary rounded-xl px-4 py-2.5 text-xs font-mono uppercase tracking-widest outline-none transition-colors placeholder:text-white/20"
+                      className="flex-1 min-w-0 bg-black border border-white/10 focus:border-primary rounded-xl px-4 py-2.5 text-xs font-mono uppercase tracking-widest outline-none transition-colors placeholder:text-white/20"
                     />
                     <button
                       onClick={applyCoupon}
                       disabled={couponLoading || !couponInput.trim()}
-                      className="bg-primary text-black px-4 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest disabled:opacity-50 hover:scale-105 transition-transform flex items-center gap-1.5"
+                      className="shrink-0 bg-primary text-black px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest disabled:opacity-50 hover:scale-105 transition-transform flex items-center justify-center gap-1.5 min-w-[80px]"
                     >
                       {couponLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Apply"}
                     </button>
@@ -581,25 +581,5 @@ function Input({
         className="bg-black border border-white/10 focus:border-primary rounded-xl px-4 py-3 text-sm outline-none transition-colors placeholder:text-white/20"
       />
     </div>
-  );
-}
-
-function CheckCircle2(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
   );
 }

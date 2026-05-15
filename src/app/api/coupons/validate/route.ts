@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { isRateLimited } from "@/lib/rate-limit";
 
 type CouponRow = {
@@ -75,10 +76,11 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ valid: false, error: "Please enter your email to use this coupon" }, { status: 400 });
       }
 
-      const { count, error: countError } = await supabase
+      const { count, error: countError } = await supabaseAdmin
         .from("orders")
         .select("*", { count: "exact", head: true })
-        .eq("customer_email", email);
+        .eq("customer_email", email)
+        .eq("payment_status", "paid");
 
       if (countError) {
         console.error("Order count check failed:", countError);

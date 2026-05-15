@@ -80,7 +80,7 @@ export function calcPrice(
   sizeId: string,
   backingId: BackingId
 ): number {
-  const charCount = text.replace(/\s/g, "").length;
+  const charCount = Math.max(text.replace(/\s/g, "").length, 1);
   const size = SIZE_OPTIONS.find((s) => s.id === sizeId) ?? SIZE_OPTIONS[0];
   const price = size.basePrice + size.pricePerChar * charCount;
   const discount = backingId === "rectangle-board" ? size.backingDiscount : 0;

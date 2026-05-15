@@ -35,7 +35,7 @@ export default function CollectionsPage() {
   });
 
   const [sortOpen,         setSortOpen]         = useState(false);
-  const [isLoadingMore]                         = useState(false);
+  const [isLoadingMore,    setIsLoadingMore]     = useState(false);
   const [scrollReady,      setScrollReady]      = useState(false);
 
   const sentinelRef        = useRef<HTMLDivElement>(null);
@@ -87,6 +87,26 @@ export default function CollectionsPage() {
   useEffect(() => {
     sessionStorage.setItem("col_limit", String(visible.length));
   }, [visible.length]);
+
+  // ── Infinite scroll via IntersectionObserver ──────────────────────────────
+  useEffect(() => {
+    if (!scrollReady || !sentinelRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+          setIsLoadingMore(true);
+          setTimeout(() => {
+            setLimit((prev) => prev + LOAD_MORE_SIZE);
+            setIsLoadingMore(false);
+          }, 400);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scrollReady, hasMore]);
 
   const categories = useMemo(() => {
     const cats = Array.from(new Set(products.map(p => p.category)));
