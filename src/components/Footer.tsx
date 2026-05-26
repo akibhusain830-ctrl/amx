@@ -25,15 +25,21 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Categories — keyword-rich links for internal link equity */}
           <div>
-            <h4 className="text-xs font-black uppercase tracking-widest mb-6">Shop</h4>
-            <ul className="space-y-4 text-sm text-text-muted">
-              <li><Link href="/collections" className="hover:text-primary transition-colors">All Products</Link></li>
-              <li><Link href="/customizer" className="hover:text-primary transition-colors">Custom Neon</Link></li>
-              <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
+            <h4 className="text-xs font-black uppercase tracking-widest mb-6">Collections</h4>
+            <ul className="space-y-3 text-sm text-text-muted">
+              <li><Link href="/collections/gaming" className="hover:text-primary transition-colors">Gaming Neon Signs</Link></li>
+              <li><Link href="/collections/cars" className="hover:text-primary transition-colors">Car & Automotive Neon Signs</Link></li>
+              <li><Link href="/collections/f1" className="hover:text-primary transition-colors">F1 Racing Neon Signs</Link></li>
+              <li><Link href="/collections/anime" className="hover:text-primary transition-colors">Anime Neon Signs</Link></li>
+              <li><Link href="/collections/aesthetic" className="hover:text-primary transition-colors">Aesthetic Neon Signs</Link></li>
+              <li><Link href="/collections/love" className="hover:text-primary transition-colors">Love & Gift Neon Signs</Link></li>
+              <li><Link href="/collections/cafe" className="hover:text-primary transition-colors">Café & Restaurant Signs</Link></li>
+              <li><Link href="/collections/under-4000" className="hover:text-primary transition-colors">Neon Signs Under ₹4000</Link></li>
             </ul>
           </div>
+
 
           {/* Policies */}
           <div>

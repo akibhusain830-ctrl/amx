@@ -10,31 +10,18 @@ export interface NeonFont {
 }
 
 export const NEON_FONTS: NeonFont[] = [
-  // Cursive & Elegant
-  { id: "passionate", name: "Passionate", category: "Cursive",     cssVar: "var(--nf-passionate)", fontFamily: "var(--nf-passionate)" },
-  { id: "dreamy",     name: "Dreamy",     category: "Cursive",     cssVar: "var(--nf-dreamy)",     fontFamily: "var(--nf-dreamy)" },
-  { id: "flowy",      name: "Flowy",      category: "Cursive",     cssVar: "var(--nf-flowy)",      fontFamily: "var(--nf-flowy)" },
-  { id: "classic",    name: "Classic",    category: "Cursive",     cssVar: "var(--nf-classic)",    fontFamily: "var(--nf-classic)" },
-  { id: "vibey",      name: "Vibey",      category: "Cursive",     cssVar: "var(--nf-vibey)",      fontFamily: "var(--nf-vibey)" },
-  // Bold & Modern
-  { id: "dope",       name: "DOPE",       category: "Bold",        cssVar: "var(--nf-dope)",       fontFamily: "var(--nf-dope)" },
-  { id: "iconic",     name: "ICONIC",     category: "Bold",        cssVar: "var(--nf-iconic)",     fontFamily: "var(--nf-iconic)" },
-  { id: "bossy",      name: "Bossy",      category: "Bold",        cssVar: "var(--nf-bossy)",      fontFamily: "var(--nf-bossy)" },
-  { id: "chemistry",  name: "Chemistry",  category: "Bold",        cssVar: "var(--nf-chemistry)",  fontFamily: "var(--nf-chemistry)" },
-  { id: "heavy",      name: "Heavy",      category: "Bold",        cssVar: "var(--nf-heavy)",      fontFamily: "var(--nf-heavy)" },
-  // Playful & Handwritten
+  // Single-stroke scripts — consistent stroke width, replicates neon tube bends
+  { id: "passionate", name: "Passionate", category: "Script",      cssVar: "var(--nf-passionate)", fontFamily: "var(--nf-passionate)" },
+  { id: "flowy",      name: "Flowy",      category: "Script",      cssVar: "var(--nf-flowy)",      fontFamily: "var(--nf-flowy)" },
+  { id: "vibey",      name: "Vibey",      category: "Script",      cssVar: "var(--nf-vibey)",      fontFamily: "var(--nf-vibey)" },
+  // Handwritten — even stroke weight, single-path letterforms
   { id: "funky",      name: "Funky",      category: "Handwritten", cssVar: "var(--nf-funky)",      fontFamily: "var(--nf-funky)" },
-  { id: "quirky",     name: "Quirky",     category: "Handwritten", cssVar: "var(--nf-quirky)",     fontFamily: "var(--nf-quirky)" },
-  { id: "chic",       name: "Chic",       category: "Handwritten", cssVar: "var(--nf-chic)",       fontFamily: "var(--nf-chic)" },
-  { id: "indie",      name: "Indie",      category: "Handwritten", cssVar: "var(--nf-indie)",      fontFamily: "var(--nf-indie)" },
-  { id: "shadow",     name: "Shadow",     category: "Handwritten", cssVar: "var(--nf-shadow)",     fontFamily: "var(--nf-shadow)" },
-  // Retro & Special
-  { id: "jolly",      name: "Jolly",      category: "Retro",       cssVar: "var(--nf-jolly)",      fontFamily: "var(--nf-jolly)" },
-  { id: "glam",       name: "Glam",       category: "Retro",       cssVar: "var(--nf-glam)",       fontFamily: "var(--nf-glam)" },
-  { id: "retro",      name: "Retro",      category: "Retro",       cssVar: "var(--nf-retro)",      fontFamily: "var(--nf-retro)" },
-  { id: "wave",       name: "Wave",       category: "Retro",       cssVar: "var(--nf-wave)",       fontFamily: "var(--nf-wave)" },
-  { id: "skinny",     name: "Skinny",     category: "Retro",       cssVar: "var(--nf-skinny)",     fontFamily: "var(--nf-skinny)" },
+  // Neon-specific — designed to simulate a continuous neon tube
+  { id: "retro",      name: "Retro",      category: "Neon",        cssVar: "var(--nf-retro)",      fontFamily: "var(--nf-retro)" },
+  // Thin display — tall, even single stroke, physically accurate for strip lights
+  { id: "skinny",     name: "Skinny",     category: "Thin",        cssVar: "var(--nf-skinny)",     fontFamily: "var(--nf-skinny)" },
 ];
+
 
 export interface NeonColor {
   id: string;

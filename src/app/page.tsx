@@ -13,6 +13,36 @@ export default async function Home() {
   const trending = await getTrendingProducts();
   const categoryThumbs = await getCategoryThumbnails();
 
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "AMX Signs",
+    "url": "https://amxsigns.com",
+    "logo": "https://amxsigns.com/logo.png",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+91-YOUR-NUMBER",
+      "contactType": "customer service",
+      "areaServed": "IN",
+      "availableLanguage": ["en", "hi"]
+    },
+    "sameAs": [
+      "https://instagram.com/amxsigns",
+      "https://facebook.com/amxsigns"
+    ]
+  };
+
+  const navigationSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": [
+      { "@type": "SiteNavigationElement", "position": 1, "name": "Home", "url": "https://amxsigns.com" },
+      { "@type": "SiteNavigationElement", "position": 2, "name": "Shop All", "url": "https://amxsigns.com/collections" },
+      { "@type": "SiteNavigationElement", "position": 3, "name": "Custom Neon", "url": "https://amxsigns.com/custom" },
+      { "@type": "SiteNavigationElement", "position": 4, "name": "Business", "url": "https://amxsigns.com/business" }
+    ]
+  };
+
   const categories = [
     { title: "Shop All",   image: categoryThumbs["shop-all"],   href: "/collections" },
     { title: "Cafe",        image: categoryThumbs["cafe"],        href: "/collections/cafe" },
@@ -28,6 +58,14 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-black selection:bg-primary/30 selection:text-primary">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(navigationSchema) }}
+      />
       <AnnouncementBar />
       <Header />
       <Hero />
