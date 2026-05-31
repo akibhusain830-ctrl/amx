@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: ProductPageProps) {
     description: metaDescription,
     alternates: { canonical: canonicalUrl },
     openGraph: {
-      type: 'website',
+      type: 'product',
       title: `${product.title} LED Neon Sign | AMX Signs`,
       description: metaDescription,
       url: canonicalUrl,
@@ -42,6 +42,13 @@ export async function generateMetadata({ params }: ProductPageProps) {
         height: 1200,
         alt: `${product.title} ${product.category} Handcrafted LED Neon Sign`,
       }],
+      other: {
+        'product:price:amount': product.price.toString(),
+        'product:price:currency': 'INR',
+        'product:availability': product.in_stock ? 'instock' : 'outofstock',
+        'product:brand': 'AMX Signs',
+        'product:category': product.category,
+      }
     },
     twitter: {
       card: 'summary_large_image',
@@ -58,20 +65,51 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://amxsigns.com';
 
-  // ── S-TIER HONEST JSON-LD SCHEMA ──────────────────────────────────────────
+  // ── S-TIER HONEST JSON-LD SCHEMA WITH UNIFIED ENTITY @GRAPH ───────────────
   const allImages = product.images && product.images.length > 0
     ? product.images
     : [product.image_url];
 
+  const organizationSchema = {
+    "@type": "Organization",
+    "@id": `${siteUrl}#organization`,
+    "name": "AMX Signs",
+    "url": siteUrl,
+    "logo": `${siteUrl}/logo.png`,
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "telephone": "+91-9101361482",
+      "contactType": "customer service",
+      "areaServed": "IN",
+      "availableLanguage": ["en", "hi"]
+    }
+  };
+
+  const websiteSchema = {
+    "@type": "WebSite",
+    "@id": `${siteUrl}#website`,
+    "url": siteUrl,
+    "name": "AMX Signs",
+    "publisher": { "@id": `${siteUrl}#organization` }
+  };
+
+  const webpageSchema = {
+    "@type": "WebPage",
+    "@id": `${siteUrl}/products/${product.slug}#webpage`,
+    "url": `${siteUrl}/products/${product.slug}`,
+    "name": `${product.title} Neon Sign | AMX Signs`,
+    "isPartOf": { "@id": `${siteUrl}#website` }
+  };
+
   const productSchema = {
-    "@context": "https://schema.org/",
     "@type": "Product",
     "@id": `${siteUrl}/products/${product.slug}#product`,
+    "mainEntityOfPage": `${siteUrl}/products/${product.slug}#webpage`,
     "name": product.title,
     "description": product.description,
     "sku": product.id,
     "mpn": `AMX-${product.id}`,
-    "brand": { "@type": "Brand", "name": "AMX Signs" },
+    "brand": { "@id": `${siteUrl}#organization` },
 
     // ImageObject — Google Images surfaces captioned images better
     "image": allImages.map((url, i) => ({
@@ -160,8 +198,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   };
 
   const faqSchema = {
-    "@context": "https://schema.org",
     "@type": "FAQPage",
+    "@id": `${siteUrl}/products/${product.slug}#faq`,
     "mainEntity": [
       {
         "@type": "Question",
@@ -198,14 +236,24 @@ export default async function ProductPage({ params }: ProductPageProps) {
     ]
   };
 
+  const unifiedGraphSchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      organizationSchema,
+      websiteSchema,
+      webpageSchema,
+      productSchema,
+      faqSchema
+    ]
+  };
+
   const related = (await getProductsByCategory(product.category))
     .filter((p) => p.id !== product.id)
     .slice(0, 8);
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(unifiedGraphSchema) }} />
       <ProductDetailClient product={product} related={related} />
     </>
   );

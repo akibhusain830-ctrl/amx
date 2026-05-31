@@ -1,0 +1,38 @@
+# AMX Signs Robots.txt - Dynamic E-commerce & AI Search Optimisation (2026)
+
+# Global Rules for all standard search crawlers
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
+Disallow: /customizer/checkout
+Disallow: /admin/
+
+# Explicit permissions for AI Search & Citation Engines (SearchGPT, Gemini, Perplexity, Claude)
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
+
+User-agent: GPTBot
+Allow: /
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
+
+# Sitemap Location
+Sitemap: https://amxsigns.com/sitemap.xml

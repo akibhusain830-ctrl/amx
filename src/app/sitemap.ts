@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { getProducts } from '@/lib/products';
 import { CITIES } from '@/lib/cities';
+import { getPosts } from '@/lib/posts';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://amxsigns.com'; // Replace with actual production URL
@@ -12,6 +13,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${baseUrl}/products/${product.slug}`,
     lastModified: product.created_at || new Date(),
     changeFrequency: 'weekly',
+    priority: 0.8,
+  }));
+
+  // Fetch all blog posts to include in sitemap
+  const posts = getPosts();
+  const blogEntries: MetadataRoute.Sitemap = posts.map((post) => ({
+    url: `${baseUrl}/blog/${post.slug}`,
+    lastModified: new Date(post.date),
+    changeFrequency: 'monthly',
     priority: 0.8,
   }));
 
@@ -48,6 +58,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
+      url: `${baseUrl}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/business`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
@@ -56,5 +72,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...categoryEntries,
     ...productEntries,
     ...cityEntries,
+    ...blogEntries,
   ];
 }
